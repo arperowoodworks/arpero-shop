@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Arpero Shop"><meta name="theme-color" content="#2b1a10">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Arpero Shop"><meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json?v=2"><link rel="apple-touch-icon" href="icon-180.png?v=2">
 <title>Arpero Shop</title>
 <style>
@@ -28,7 +28,12 @@ dialog label{display:block;margin:8px 0 2px;font-size:14px}dialog input,dialog t
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));border-radius:30px;height:58px;font-size:18px;box-shadow:0 4px 14px #000a}
 .cf{position:fixed;top:-10px;width:10px;height:14px;z-index:99;animation:fall 1.8s linear forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.7}}
 .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);background:#c98a3c;color:#1e120a;padding:14px 20px;border-radius:14px;font-weight:800;z-index:100}
-</style></head><body>
+
+body{background:#fff;color:#111}h2,details summary{color:#000}.hud,.card{background:#fff;border:2px solid #111}.hud b{color:#000}.sub,.notes{color:#555}
+.xpbar,.bar{background:#e6e6e6}.xpbar i,.bar i{background:#111}.bar span{color:#000;mix-blend-mode:difference;filter:invert(1)}
+.focus{background:#111;color:#fff;border-left-color:#111}.tag{background:#eee;color:#111;border:1px solid #111}
+button{background:#fff;color:#111;border:2px solid #111}button.p{background:#111;color:#fff}button.d{background:#fff;border-color:#b00;color:#b00}
+.red{color:#c00}.ok{color:#111}dialog{background:#fff;color:#111}dialog input,dialog textarea{background:#f5f5f5;color:#111;border-color:#111}</style></head><body>
 <header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1></header>
 <div class="hud" id="hud"></div><div class="focus" id="focusEl"></div>
 <h2>Projects</h2><div id="active"></div>
