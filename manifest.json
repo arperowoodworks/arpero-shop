@@ -1,2 +1,2 @@
 {"name":"Arpero Shop","short_name":"Arpero Shop","start_url":"./","scope":"./","display":"standalone","background_color":"#1e120a","theme_color":"#2b1a10",
-"icons":[{"src":"icon-180.png","sizes":"180x180","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+"icons":[{"src":"icon-180.png?v=2","sizes":"180x180","type":"image/png"},{"src":"icon-512.png?v=2","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
