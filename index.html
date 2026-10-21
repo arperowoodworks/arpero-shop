@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arpero Shop"><meta name="theme-color" content="#2b1a10">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
+<title>Arpero Shop</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;color:#f3e6d3;background:#1e120a repeating-linear-gradient(95deg,#24160c 0 14px,#2a1a0f 14px 30px,#21140b 30px 41px);padding:env(safe-area-inset-top) 12px 80px}
+h1{font-size:22px;margin:14px 0 6px}h2{font-size:17px;margin:20px 0 8px;color:#e0b77a}
+.hud{background:#3a2414;border:1px solid #6b4425;border-radius:14px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.hud b{color:#ffd27a}.xpbar{width:100%;height:10px;background:#1a0f08;border-radius:6px;overflow:hidden}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#c98a3c,#ffd27a)}
+.focus{margin-top:10px;background:#5a2e12;border-left:6px solid #ff9a3c;border-radius:10px;padding:10px;font-weight:600}
+.card{background:#3b2616ee;border:1px solid #6b4425;border-radius:14px;padding:12px;margin:10px 0}
+.top{display:flex;justify-content:space-between;gap:8px}.name{font-size:18px;font-weight:700}.sub{font-size:14px;color:#cdb391}
+.tag{display:inline-block;background:#24506b;color:#d9f0ff;border-radius:20px;padding:3px 10px;font-size:13px;margin:6px 6px 0 0}
+.due{font-size:14px;font-weight:700;white-space:nowrap}.red{color:#ff6b5b}.ok{color:#9fd88a}
+.bar{height:26px;background:#1a0f08;border-radius:13px;overflow:hidden;margin:10px 0 4px;position:relative}.bar i{display:block;height:100%;background:linear-gradient(90deg,#8a5a2b,#e0a458)}
+.bar span{position:absolute;inset:0;text-align:center;line-height:26px;font-weight:700}
+input[type=range]{width:100%;height:36px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+button{min-height:46px;min-width:46px;padding:0 14px;font-size:16px;border-radius:12px;border:1px solid #8a5a2b;background:#5a3a20;color:#f3e6d3;font-weight:600}
+button.p{background:#c98a3c;color:#1e120a}button.d{background:#3a1a14;border-color:#7a2e22}
+.notes{font-size:14px;margin-top:6px;color:#e8d5b8}
+details summary{font-size:17px;color:#e0b77a;padding:12px 0;cursor:pointer}
+dialog{background:#2f1d10;color:#f3e6d3;border:1px solid #8a5a2b;border-radius:14px;width:94%;max-width:420px}
+dialog label{display:block;margin:8px 0 2px;font-size:14px}dialog input,dialog textarea{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #6b4425;background:#1a0f08;color:#f3e6d3}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));border-radius:30px;height:58px;font-size:18px;box-shadow:0 4px 14px #000a}
+.cf{position:fixed;top:-10px;width:10px;height:14px;z-index:99;animation:fall 1.8s linear forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.7}}
+.toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);background:#c98a3c;color:#1e120a;padding:14px 20px;border-radius:14px;font-weight:800;z-index:100}
+</style></head><body>
+<h1>🪵 Arpero Shop</h1>
+<div class="hud" id="hud"></div><div class="focus" id="focusEl"></div>
+<h2>Projects</h2><div id="active"></div>
+<details id="fin"><summary>Finished</summary><div id="done"></div></details>
+<h2>Made to order (Shop)</h2><div id="shop"></div>
+<h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
+<button class="fab p" onclick="edit()">＋ Project</button>
+<dialog id="dlg"><form method="dialog" id="f">
+<label>Name<input name="name" required></label><label>Customer<input name="customer"></label>
+<label>Due date<input name="due" type="date"></label><label>Shipping tag<input name="ship" placeholder="Ship to Dallas"></label>
+<label>Notes<textarea name="notes" rows="3"></textarea></label>
+<div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
+<script>
+const K='arperoShop1',TODAY=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const P=(n,c,due,ship,notes,cat)=>({id:Math.random().toString(36).slice(2),name:n,customer:c,due,ship,notes,pct:0,done:false,cat:cat||'job',maxPct:0});
+function seed(){return{xp:0,streak:0,last:'',projects:[
+P("Natalia's cutting board","Natalia","2026-10-22","Ship to Dallas",""),
+P("Cousin's painting with key holder","Cousin","2026-10-22","Ship to Dallas","May not make the Dallas bundle"),
+P("Josh's bar table","Josh","2026-11-05","","Confirm exact date"),
+P("Wheel caps","","","","Ram 2500 set, best-seller restock"),
+P("Joann's coasters","Joann","","",""),P("Kevin's coasters","Kevin","","",""),P("Caroline's height board","Caroline","","",""),
+...["Walnut Dining Chair","Cherry Wood Bookshelf","Walnut Coffee Table","White Oak Coffee Table"].map(n=>P(n,"","","","Waiting for order","shop"))]}}
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();
+const save=()=>localStorage.setItem(K,JSON.stringify(S));
+const LV=[[0,'Apprentice'],[150,'Sawdust Sweeper'],[400,'Journeyman'],[800,'Joiner'],[1400,'Craftsman'],[2200,'Cabinetmaker'],[3200,'Master Woodworker'],[4500,'Grand Master of the Grain']];
+const lvl=x=>{let i=0;LV.forEach((l,j)=>{if(x>=l[0])i=j});return i};
+const days=d=>d?Math.round((new Date(d+'T00:00')-new Date(TODAY()+'T00:00'))/864e5):null;
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function bump(){const t=TODAY();if(S.last===t)return;const y=new Date();y.setDate(y.getDate()-1);const ys=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');S.streak=S.last===ys?S.streak+1:1;S.last=t}
+function setPct(id,v){const p=S.projects.find(x=>x.id==id);v=Math.max(0,Math.min(100,+v));if(v>p.maxPct){S.xp+=v-p.maxPct;p.maxPct=v;bump()}p.pct=v;if(v===100&&!p.done)return finish(id);save();R()}
+function finish(id){const p=S.projects.find(x=>x.id==id);if(p.maxPct<100){S.xp+=100-p.maxPct;p.maxPct=100}p.pct=100;p.done=true;p.doneOn=TODAY();let b=50;const dl=days(p.due);if(p.due&&dl>=0)b+=25;S.xp+=b;bump();save();R();party('+'+b+' XP bonus! '+p.name+' done 🎉')}
+function party(msg){const c=['#ffd27a','#c98a3c','#9fd88a','#ff6b5b','#7ac6ff'];for(let i=0;i<70;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=c[i%5];e.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function card(p){const d=days(p.due),red=d!==null&&d<=2&&!p.done;
+const dt=p.done?'✅ '+p.doneOn:d===null?'No date':d<0?(-d)+'d overdue':d===0?'Due today':d+'d left';
+const idle=p.cat==='shop'&&p.pct===0;
+return `<div class="card"><div class="top"><div><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.customer)}${p.due?' · '+p.due:''}</div></div><div class="due ${red?'red':'ok'}">${idle?'Waiting for order':dt}</div></div>
+${p.ship?`<span class="tag">📦 ${esc(p.ship)}</span>`:''}${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
+<div class="bar"><i style="width:${p.pct}%"></i><span>${p.pct}%</span></div>
+${p.done?`<div class="row"><button onclick="reopen('${p.id}')">Reopen</button><button class="d" onclick="del('${p.id}')">Delete</button></div>`:
+`<input type="range" min="0" max="100" step="5" value="${p.pct}" onchange="setPct('${p.id}',this.value)">
+<div class="row"><button onclick="setPct('${p.id}',${p.pct-10})">−10%</button><button onclick="setPct('${p.id}',${p.pct+10})">+10%</button><button class="p" onclick="finish('${p.id}')">Done ✓</button><button onclick="edit('${p.id}')">Edit</button><button class="d" onclick="del('${p.id}')">🗑</button></div>`}</div>`}
+const byDue=(a,b)=>(a.due||'9999')<(b.due||'9999')?-1:(a.due||'9999')>(b.due||'9999')?1:0;
+function R(){const i=lvl(S.xp),cur=LV[i][0],nx=LV[i+1]?LV[i+1][0]:cur,pc=nx>cur?(S.xp-cur)/(nx-cur)*100:100;
+const live=S.streak&&(S.last===TODAY()||days(S.last)===-1)?S.streak:0;
+hud.innerHTML=`<div>Lv ${i+1} <b>${LV[i][1]}</b></div><div>⭐ <b>${S.xp}</b> XP</div><div>🔥 <b>${live}</b>-day streak</div><div class="xpbar"><i style="width:${pc}%"></i></div><div class="sub">${LV[i+1]?(nx-S.xp)+' XP to '+LV[i+1][1]:'Max level!'}</div>`;
+const act=S.projects.filter(p=>!p.done&&p.cat!=='shop').sort(byDue),sh=S.projects.filter(p=>!p.done&&p.cat==='shop'),dn=S.projects.filter(p=>p.done);
+const f=act[0];focusEl.innerHTML=f?`🎯 Today's focus: ${esc(f.name)} — ${f.due?(days(f.due)<0?'overdue!':days(f.due)===0?'due today':'due in '+days(f.due)+'d'):'no date'} (${f.pct}%)`:'🎯 All caught up!';
+active.innerHTML=act.map(card).join('')||'<div class="sub">No active projects</div>';shop.innerHTML=sh.map(card).join('');
+done.innerHTML=dn.map(card).join('')||'<div class="sub">Nothing finished yet</div>';fin.querySelector('summary').textContent='Finished ('+dn.length+')'}
+let eid=null;function edit(id){eid=id||null;const p=S.projects.find(x=>x.id==id)||{};['name','customer','due','ship','notes'].forEach(k=>f.elements[k].value=p[k]||'');dlg.showModal()}
+dlg.addEventListener('close',()=>{if(dlg.returnValue!=='save')return;const v={};['name','customer','due','ship','notes'].forEach(k=>v[k]=f.elements[k].value.trim());if(!v.name)return;
+if(eid)Object.assign(S.projects.find(x=>x.id==eid),v);else S.projects.push(Object.assign(P(v.name,v.customer,v.due,v.ship,v.notes),{}));save();R()});
+function del(id){if(confirm('Delete this project?')){S.projects=S.projects.filter(p=>p.id!=id);save();R()}}
+function reopen(id){const p=S.projects.find(x=>x.id==id);p.done=false;p.pct=90;save();R()}
+function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='arpero-shop-'+TODAY()+'.json';a.click()}
+imp.onchange=e=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.projects))throw 0;S=d;save();R();alert('Backup restored')}catch(x){alert('Not a valid backup file')}};r.readAsText(e.target.files[0])};
+R();if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
+</script></body></html>
