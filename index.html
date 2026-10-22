@@ -50,7 +50,7 @@ input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-
 .ql{display:flex;gap:6px;align-items:center;margin:6px 0}.ql input,.ql select{font-size:16px;padding:8px;border:1px solid #111;border-radius:10px;background:#f5f5f5;min-width:0}.ql .q{flex:0 0 58px}.ql .pr{flex:0 0 86px}.ql .gr{flex:1}.int{border:2px dashed #111;border-radius:10px;padding:8px;margin-top:8px;font-size:14px}.qst{font-size:12px;font-weight:800;padding:2px 8px;border-radius:20px;border:1px solid #111}.qst.Accepted{background:#111;color:#fff}.qst.Declined{color:#c00;border-color:#c00}.qst.Sent{background:#eee}
 #qdlg,#vdlg{max-height:92vh;overflow:auto}
 </style></head><body>
-<header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1></header>
+<header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1><span id="syPill" class="qst" style="margin-left:auto" onclick="syncBox.scrollIntoView({behavior:'smooth'})">Signed out</span></header>
 <div class="hud" id="hud"></div><div class="tot" id="totEl"></div><div class="focus" id="focusEl"></div>
 <div class="tabs"><button id="tP" class="on" onclick="tab('p')">Projects</button><button id="tL" onclick="tab('l')">Log</button><button id="tM" onclick="tab('m')">Stock<span id="mCnt"></span></button><button id="tY" onclick="tab('y')">Layout</button><button id="tQ" onclick="tab('q')">Quotes</button></div>
 <div id="vP"><h2>Projects</h2><div id="active"></div>
@@ -69,6 +69,7 @@ input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-
 <div class="card"><label>Add item<select id="preSel"></select></label><button class="p" style="width:100%;margin-top:6px" onclick="addItem()">＋ Add to room</button>
 <div class="qa" style="margin-top:8px"><label>Room width (ft)<input id="rW" type="number" step="0.5" onchange="setRoom()"></label><label>Room length (ft)<input id="rH" type="number" step="0.5" onchange="setRoom()"></label></div></div></div>
 <div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
+<h2>Sync</h2><div class="card" id="syncBox"></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
 <button class="fab p" onclick="edit()">＋ Project</button>
 <dialog id="dlg"><form method="dialog" id="f">
@@ -113,6 +114,8 @@ input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-
 <div id="qTot" class="sub" style="font-size:15px;margin-top:8px"></div>
 <div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
 <dialog id="vdlg"><div id="qCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="shareQ()">Share</button><button onclick="emailQ()">Email quote</button><button onclick="copyQ()">Copy text</button><button onclick="vdlg.close()">Close</button></div></dialog>
+<dialog id="chdlg"><div class="name">Use cloud data or this device's data?</div><div class="sub" id="chInfo"></div>
+<div class="row" style="margin-top:10px"><button id="chCloud" onclick="chdlg.close('cloud')">Use cloud data</button><button id="chLocal" onclick="chdlg.close('local')">Use this device</button></div></dialog>
 <script>
 const K='arperoShop1',TODAY=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const P=(n,c,due,ship,notes,cat)=>({id:Math.random().toString(36).slice(2),name:n,customer:c,due,ship,notes,pct:0,done:false,cat:cat||'job',maxPct:0,price:0,costs:[],paid:0,product:''});
@@ -127,7 +130,7 @@ function mig(d){if(!Array.isArray(d.quotes))d.quotes=[];(d.projects||[]).forEach
 if(!d.layout.find(r=>r.id==='shop'))d.layout.unshift({id:'shop',name:'Shop',w:22,h:22,items:[]});
 d.layout.forEach(r=>(r.items||[]).forEach(i=>{if(i.a==null)i.a=0}));if(!d.layout.find(r=>r.id==='office'))d.layout.push({id:'office',name:'Office',w:9,h:10,items:[{id:'o1',name:'Computer desk + computer',x:0.5,y:0.5,w:5,h:2.5},{id:'o2',name:'Cricut Maker 4',x:6.5,y:0.5,w:2,h:1},{id:'o3',name:'Bambu X1C',x:6.5,y:7.5,w:1.5,h:1.5}]})}
 let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.log=S.log||[];if(!Array.isArray(S.materials))S.materials=[];mig(S);
-const save=()=>localStorage.setItem(K,JSON.stringify(S));
+const save=()=>{S.updatedAt=Date.now();localStorage.setItem(K,JSON.stringify(S));if(window.cloudQueue)cloudQueue()};
 const LV=[[0,'Apprentice'],[150,'Sawdust Sweeper'],[400,'Journeyman'],[800,'Joiner'],[1400,'Craftsman'],[2200,'Cabinetmaker'],[3200,'Master Woodworker'],[4500,'Grand Master of the Grain']];
 const lvl=x=>{let i=0;LV.forEach((l,j)=>{if(x>=l[0])i=j});return i};
 const days=d=>d?Math.round((new Date(d+'T00:00')-new Date(TODAY()+'T00:00'))/864e5):null;
@@ -266,10 +269,10 @@ let qid=null;function editQ(id){qid=id||null;const q=S.quotes.find(x=>x.id===id)
 qCust.value=q.customer||'';qCon.value=q.contact||'';qDisc.value=q.disc||'';qDT.value=q.discT||'%';qDep.value=q.dep==null?50:q.dep;qVal.value=q.valid||'';qTax.checked=!!q.tax;qNotes.value=q.notes||'';qSt.value=q.status||'Draft';qXc.value=q.xcost||'';
 qItems.innerHTML='';qCus.innerHTML='';qMats.innerHTML='';(q.items.length?q.items:id?[]:[{qty:1}]).forEach(qItemRow);q.custom.forEach(qCusRow);(q.mats||[]).forEach(m=>S.materials.length&&qMatRow(m));qUp();qdlg.showModal()}
 qf.oninput=qf.onchange=qUp;
-qdlg.addEventListener('close',()=>{if(qdlg.returnValue!=='save')return;const q=qRead();if(!q.customer)return;if(qid)Object.assign(S.quotes.find(x=>x.id===qid),q);else{q.id=Math.random().toString(36).slice(2);q.num=(S.quotes.reduce((a,x)=>Math.max(a,x.num||0),1000))+1;q.date=TODAY();S.quotes.push(q)}save();renderQ()});
+qdlg.addEventListener('close',()=>{if(qdlg.returnValue!=='save')return;const q=qRead();if(!q.customer)return;if(qid)Object.assign(S.quotes.find(x=>x.id===qid),q);else{q.id=Math.random().toString(36).slice(2);q.num=(S.quotes.reduce((a,x)=>Math.max(a,x.num||0),1000))+1;q.date=TODAY();S.quotes.push(q)}save();renderQ();const qq=qid?S.quotes.find(x=>x.id===qid):q;if(qq.status==='Accepted'&&!qq.projectId)convQ(qq.id)});
 function renderQ(){qList.innerHTML=S.quotes.slice().reverse().map(q=>{const c=qCalc(q);return`<div class="card"><div class="top"><div><div class="name">#${q.num} · ${esc(q.customer)}</div><div class="sub">${fd(q.date)} · valid to ${fd(q.valid)}</div></div><span class="qst ${q.status}">${q.status}</span></div>
 <div class="money"><span>Total <b>${$$(c.total)}</b></span><span>Deposit <b>${$$(c.dep)}</b></span><span class="sub">Profit ${$$(c.profit)} (you only)</span></div>
-<div class="row"><button class="p" onclick="viewQ('${q.id}')">View / Share</button><button onclick="editQ('${q.id}')">Edit</button>${q.projectId?'<span class="sub">✓ Project made</span>':q.status==='Accepted'?`<button onclick="convQ('${q.id}')">→ Project</button>`:''}<button class="d" onclick="delQ('${q.id}')">🗑</button></div></div>`}).join('')||'<div class="sub" style="margin-top:10px">No quotes yet. Tap ＋ New quote to price a job for a customer.</div>'}
+<div class="row"><button class="p" onclick="viewQ('${q.id}')">View / Share</button><button onclick="editQ('${q.id}')">Edit</button>${q.status==='Draft'||q.status==='Sent'?`<button onclick="acceptQ('${q.id}')">✓ Mark accepted</button>`:''}${q.projectId?'<span class="sub">✓ Project made</span>':q.status==='Accepted'?`<button onclick="convQ('${q.id}')">→ Project</button>`:''}<button class="d" onclick="delQ('${q.id}')">🗑</button></div></div>`}).join('')||'<div class="sub" style="margin-top:10px">No quotes yet. Tap ＋ New quote to price a job for a customer.</div>'}
 function delQ(id){if(confirm('Delete this quote?')){S.quotes=S.quotes.filter(q=>q.id!==id);save();renderQ()}}
 let vq=null;const lineNm=i=>i.name.replace(' — ',' (')+(i.name.includes(' — ')?')':'');
 function viewQ(id){const q=vq=S.quotes.find(x=>x.id===id),c=qCalc(q);
@@ -281,15 +284,46 @@ qCard.innerHTML=`<div class="qc" id="qcEl"><div class="hd"><img src="logo.png?v=
 ${q.notes?`<div style="margin-top:8px;white-space:pre-wrap">${esc(q.notes)}</div>`:''}<div class="ft">Valid until ${fd(q.valid)}<br><b>Arpero Woodworks</b> · arperowoodworks.com</div></div>`;vdlg.showModal()}
 function qText(q,email){const c=qCalc(q),L=[];L.push(email?`Hi ${q.customer},`:`Arpero Woodworks — Quote #${q.num}`);if(email)L.push('','Thanks for reaching out! Here is your quote:');else L.push(`For: ${q.customer}`,`Date: ${fd(q.date)}`);L.push('');
 q.items.forEach(i=>L.push(`- ${lineNm(i)} x${i.qty}: ${$$(i.price*i.qty)}`));q.custom.forEach(x=>L.push(`- ${x.desc}: ${$$(x.price)}`));L.push('',`Subtotal: ${$$(c.sub)}`);if(c.disc)L.push(`Discount: -${$$(c.disc)}`);if(c.tax)L.push(`Sales tax (8.25%): ${$$(c.tax)}`);
-L.push(`Total: ${$$(c.total)}`);if(q.dep)L.push(`Deposit due to start (${q.dep}%): ${$$(c.dep)}`);L.push(`Valid until: ${fd(q.valid)}`);if(q.notes)L.push('',`Notes: ${q.notes}`);L.push('',email?'Thank you,':'',email?'Oscar':'','Arpero Woodworks','arperowoodworks.com');return L.filter((x,i,a)=>!(x===''&&a[i-1]==='')).join('\n').replace(/\n{2,}$/,'')}
+L.push(`Total: ${$$(c.total)}`);if(q.dep)L.push(`Deposit due to start (${q.dep}%): ${$$(c.dep)}`);L.push(`Valid until: ${fd(q.valid)}`);if(q.notes)L.push('',`Notes: ${q.notes}`);L.push('','To accept, just reply "Yes, I accept" and I\'ll get started once the deposit is in.');L.push('',email?'Thank you,':'',email?'Oscar':'','Arpero Woodworks','arperowoodworks.com');return L.filter((x,i,a)=>!(x===''&&a[i-1]==='')).join('\n').replace(/\n{2,}$/,'')}
 function shareQ(){const t=qText(vq);if(navigator.share)navigator.share({title:'Arpero Woodworks Quote #'+vq.num,text:t}).catch(()=>{});else copyQ()}
 function copyQ(){const t=qText(vq);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>party('Quote copied'),()=>prompt('Copy this quote:',t))}
 function emailQ(){const q=vq;let to=(q.contact||'').match(/[^\s,;<>]+@[^\s,;<>]+\.[a-z]{2,}/i);to=to?to[0]:prompt('Customer email address?','');if(!to)return;if(!/@/.test(q.contact||'')){q.contact=q.contact?q.contact+' · '+to:to}
 let body=qText(q,true);const sub=encodeURIComponent('Arpero Woodworks Quote #'+q.num);let u;while((u=`mailto:${encodeURIComponent(to).replace('%40','@')}?subject=${sub}&body=${encodeURIComponent(body)}`).length>1900&&body.length>200)body=body.slice(0,body.length-150).replace(/\n[^\n]*$/,'')+'\n…\nFull quote attached on request.\nOscar · Arpero Woodworks · arperowoodworks.com';
 window.LAST_MAILTO=u;location.href=u;if(q.status==='Draft')q.status='Sent';save();renderQ()}
-function convQ(id){const q=S.quotes.find(x=>x.id===id),c=qCalc(q);const nm=(q.items[0]?q.items[0].name.split(' — ')[0]:q.custom[0]?q.custom[0].desc:'Custom order')+(q.items.length+q.custom.length>1?' + more':'');
+function convQ(id){const q=S.quotes.find(x=>x.id===id),c=qCalc(q);if(q.projectId&&S.projects.some(x=>x.id===q.projectId))return;const nm=(q.items[0]?q.items[0].name.split(' — ')[0]:q.custom[0]?q.custom[0].desc:'Custom order')+(q.items.length+q.custom.length>1?' + more':'');
 const p=P(nm,q.customer,'','',[`From quote #${q.num}`,...q.items.map(i=>`${lineNm(i)} x${i.qty}`),...q.custom.map(x=>x.desc),q.notes].filter(Boolean).join('\n'));p.price=Math.round(c.net*100)/100;p.product=q.items[0]?q.items[0].name:'';p.materialsUsed=(q.mats||[]).map(m=>({id:Math.random().toString(36).slice(2),mid:m.mid,qty:m.qty,used:false}));if(c.cost)p.costs=[{name:'Est. cost (quote)',amount:Math.round(c.cost*100)/100}];
-S.projects.push(p);q.projectId=p.id;save();R();renderQ();party('Project created from quote #'+q.num)}
+S.projects.push(p);q.projectId=p.id;save();R();renderQ();projToast(q.customer,p.id)}
+function acceptQ(id){const q=S.quotes.find(x=>x.id===id);q.status='Accepted';save();renderQ();if(!q.projectId)convQ(id)}
+function projToast(cu,pid){const t=document.createElement('div');t.className='toast';t.style.cssText+='background:#111;color:#fff;display:flex;gap:10px;align-items:center;top:auto;bottom:90px';t.innerHTML=`<span>Project created for ${esc(cu)}</span><button style="min-height:36px;padding:0 10px">Open</button>`;
+t.querySelector('button').onclick=()=>{t.remove();tab('p');const i=S.projects.findIndex(x=>x.id===pid);const el=document.querySelectorAll('#active .card');const c=[...el].find(e=>e.innerHTML.includes(pid));(c||el[el.length-1]||document.body).scrollIntoView({behavior:'smooth',block:'center'})};document.body.appendChild(t);setTimeout(()=>t.remove(),6000)}
+// ---- Cloud sync (Firebase; adapter injected by the module script below, or a mock in tests) ----
+// Firestore doc shops/{uid}/data/state (rules: only oskararpero@gmail.com, verified) = {state: JSON string of S, updatedAt: ms, device}
+const SY={ad:null,user:null,st:'Signed out',t:null,unsub:null,err:'',dev:(localStorage.arperoDev||(localStorage.arperoDev=Math.random().toString(36).slice(2)))};
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function setSt(x){SY.st=navigator.onLine===false&&SY.user?'Offline':x;syncUI()}
+function syncUI(){if(!window.syPill)return;syPill.textContent=SY.ad?SY.st:'Sync off';syPill.className='qst '+(SY.st==='Synced'?'Accepted':SY.st==='Offline'?'Declined':'');
+const kb=Math.round(new Blob([JSON.stringify(S)]).size/1024),warn=kb>800?`<div class="short">⚠ Data is ${kb} KB — near the 1 MB cloud limit. Export a backup and delete old finished projects or quotes.</div>`:'';
+syncBox.innerHTML=!SY.ad?`<div class="sub">${SY.err?'Cloud sync couldn\'t load: '+esc(SY.err):'Loading cloud sync…'} Your data is still saved on this device.</div>`:
+SY.user?`<div class="top"><span>Signed in as <b>${esc(SY.user.email||SY.user.displayName||'Google user')}</b></span><span class="qst ${SY.st==='Synced'?'Accepted':''}">${SY.st}</span></div><div class="sub">Changes save to the cloud and show up on your other devices. Data size ${kb} KB.</div>${warn}${SY.err?'<div class="short">'+esc(SY.err)+'</div>':''}<div class="row"><button onclick="cloudPush()">Sync now</button><button onclick="syncOut()">Sign out</button></div>`:
+`<div class="sub">Sign in with <b>oskararpero@gmail.com</b> to share your data between your phone and iPad. Everything still works without signing in.</div>${SY.err?'<div class="short">'+esc(SY.err)+'</div>':''}<button class="p" style="width:100%;margin-top:8px" onclick="syncIn()">Sign in with Google</button>`}
+function applyCloud(c){try{const d=JSON.parse(c.state);if(!Array.isArray(d.projects))return;mig(d);if(!Array.isArray(d.log))d.log=[];if(!Array.isArray(d.materials))d.materials=[];S=d;localStorage.setItem(K,JSON.stringify(S));R();if(!vQ.hidden)renderQ()}catch(e){SY.err='Cloud data unreadable'}}
+function cloudPush(){clearTimeout(SY.t);SY.t=null;if(!SY.user)return Promise.resolve();setSt('Syncing');const json=JSON.stringify(S);if(json.length>1000000){SY.err='Too big to sync (over 1 MB). Export a backup and remove old items.';setSt('Offline');return Promise.resolve()}
+return SY.ad.set(SY.user.uid,{state:json,updatedAt:S.updatedAt||Date.now(),device:SY.dev}).then(()=>{SY.err='';setSt('Synced')},e=>{SY.err=e&&e.code==='permission-denied'?'Cloud refused the save. Sign out and sign in with oskararpero@gmail.com.':'';setSt('Offline')})}
+window.cloudQueue=()=>{if(!SY.user)return;setSt('Syncing');clearTimeout(SY.t);SY.t=setTimeout(cloudPush,1500)};
+const fdt=t=>t?new Date(t).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'never';
+async function onUser(u){SY.user=u;if(SY.unsub){SY.unsub();SY.unsub=null}if(!u){setSt('Signed out');return}setSt('Syncing');
+try{const c=await SY.ad.get(u.uid),linked=localStorage.arperoSyncUid===u.uid;
+if(!c||!c.state)await cloudPush();
+else if((c.updatedAt||0)!==(S.updatedAt||0)){const cloudNewer=(c.updatedAt||0)>(S.updatedAt||0);let pick=cloudNewer?'cloud':'local';
+if(!linked){chInfo.innerHTML=`Cloud: saved ${fdt(c.updatedAt)}${cloudNewer?' <b>(newer)</b>':''}<br>This device: saved ${fdt(S.updatedAt)}${cloudNewer?'':' <b>(newer)</b>'}<br>The other copy will be replaced. Tip: Export a backup first if unsure.`;chCloud.className=cloudNewer?'p':'';chLocal.className=cloudNewer?'':'p';
+pick=await new Promise(res=>{chdlg.returnValue='';chdlg.onclose=()=>res(chdlg.returnValue||(cloudNewer?'cloud':'local'));chdlg.showModal();(cloudNewer?chCloud:chLocal).focus()})}
+if(pick==='cloud')applyCloud(c);else await cloudPush()}
+localStorage.arperoSyncUid=u.uid;setSt('Synced');
+SY.unsub=SY.ad.listen(u.uid,c=>{if(SY.t||!c||c.device===SY.dev&&c.updatedAt===S.updatedAt)return;if((c.updatedAt||0)>(S.updatedAt||0)){applyCloud(c);setSt('Synced')}})}catch(e){SY.err='Sync error: '+(e.code||e.message||e);setSt('Offline')}}
+async function syncIn(){SY.err='';syncUI();try{await SY.ad.signIn(isStandalone())}catch(e){SY.err=e.code==='auth/popup-closed-by-user'?'Sign-in was closed. Tap again to retry.':'Sign-in failed: '+(e.code||e.message)+'. See tips below.';syncUI()}}
+async function syncOut(){if(SY.t)await cloudPush();await SY.ad.signOut();localStorage.removeItem('arperoSyncUid')}
+window.syncInit=ad=>{SY.ad=ad;ad.onAuth(onUser);syncUI()};window.syncErr=e=>{SY.err=(e&&(e.code||e.message))||String(e);syncUI()};
+addEventListener('online',()=>{if(SY.user)cloudPush()});addEventListener('offline',()=>setSt('Offline'));
 const _R=R;R=function(){_R();renderM();const nb=needToBuy();mNeed.hidden=!nb.length;mNeed.innerHTML=`<h3 style="margin:2px 0">Need to buy (${nb.length})</h3><div class="sub">What your open projects still need, minus what's on hand</div>`+nb.map(x=>`<div class="le"><div>${esc(x.m.name)}<small>${x.m.cost?'≈ '+$$(x.d*x.m.cost):''}</small></div><b>${fq(x.d)} ${esc(x.m.unit||'')}</b></div>`).join('')+(nb.some(x=>x.m.cost)?`<div class="lsum">≈ ${$$(nb.reduce((a,x)=>a+x.d*(+x.m.cost||0),0))}</div>`:'');if(!vY.hidden)renderY()};
 // ---- Layout (S.layout [{id,name,w,h,items:[{id,name,x,y,w,h}]}], feet) ----
 const PRE={shop:[['Workbench',6,3],['Table saw (Skil)',4,3],['Jointer (Wahuda 10")',5,2],['Planer (DW735)',2,2],['Bandsaw (Bauer 14")',2.5,2.5],['Miter saw station',8,2],['Router table',3,2],['Assembly table',6,4],['Lumber rack',8,1.5],['Dust collector',2.5,2.5],['Laser (LaserPecker)',1.5,1.5],['Shelf',4,1.5]],
@@ -324,5 +358,21 @@ function addItem(){const r=RM(),p=(PRE[r.id]||PRE.shop)[preSel.value];const it={
 function delI(){const r=RM();r.items=r.items.filter(x=>x.id!==selI);selI=null;save();renderY()}
 function setRoom(){const r=RM();r.w=Math.max(4,+rW.value||r.w);r.h=Math.max(4,+rH.value||r.h);r.items.forEach(i=>clampI(i,r));save();renderY()}
 addEventListener('resize',()=>{if(!vY.hidden)renderY()});
-R();if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
+R();syncUI();if(window.SYNC_MOCK)syncInit(SYNC_MOCK);if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
+</script>
+<script type="module">
+if(!window.SYNC_MOCK){try{
+const V='https://www.gstatic.com/firebasejs/11.10.0/';
+const [{initializeApp},A,F]=await Promise.all([import(V+'firebase-app.js'),import(V+'firebase-auth.js'),import(V+'firebase-firestore.js')]);
+const app=initializeApp({apiKey:"AIzaSyCBmD2yN0DkDWkGBR9RDS4ApqVs13pSGC4",authDomain:"arpero-shop.firebaseapp.com",projectId:"arpero-shop",storageBucket:"arpero-shop.firebasestorage.app",messagingSenderId:"404661227591",appId:"1:404661227591:web:18608822692e2a349e2162"});
+const auth=A.initializeAuth(app,{persistence:[A.indexedDBLocalPersistence,A.browserLocalPersistence],popupRedirectResolver:A.browserPopupRedirectResolver});
+const db=F.getFirestore(app),ref=uid=>F.doc(db,'shops',uid,'data','state');
+const prov=()=>{const p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});return p};
+// Popup first (works on iOS Safari and home-screen apps, where redirect breaks due to storage partitioning); redirect only if popups are blocked/unsupported.
+const signIn=async()=>{try{await A.signInWithPopup(auth,prov())}catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code))return A.signInWithRedirect(auth,prov());throw e}};
+A.getRedirectResult(auth).catch(e=>syncErr(e));
+syncInit({onAuth:cb=>A.onAuthStateChanged(auth,cb),signIn,signOut:()=>A.signOut(auth),
+get:async uid=>{const s=await F.getDoc(ref(uid));return s.exists()?s.data():null},set:(uid,d)=>F.setDoc(ref(uid),d),
+listen:(uid,cb)=>F.onSnapshot(ref(uid),s=>{if(s.exists()&&!s.metadata.hasPendingWrites)cb(s.data())})});
+}catch(e){window.syncErr&&syncErr(e)}}
 </script></body></html>
