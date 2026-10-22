@@ -77,8 +77,10 @@ select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px soli
 <div class="row" style="margin-top:6px"></div><div class="sub" id="cprev"></div>
 <div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
 <dialog id="mdlg"><form method="dialog" id="mf">
-<label>Name<input name="name" required placeholder="Walnut 8/4"></label>
 <label>Category<select name="cat"><option value="wood">Wood</option><option value="finish">Finish / epoxy</option><option value="hardware">Hardware</option><option value="abrasives">Abrasives</option><option value="other">Other</option></select></label>
+<label>Material<select id="mPre"></select></label>
+<div class="qa"><label id="mThkL">Thickness<select id="mThk"><option value="">—</option><option>4/4</option><option>5/4</option><option>6/4</option><option>8/4</option><option>12/4</option><option>3/4" ply</option><option>1/2" ply</option></select></label><label id="mSizeL">Size / length<input id="mSize" placeholder='e.g. 1.25"'></label></div>
+<label>Name<input name="name" required placeholder="Walnut 8/4"></label>
 <div class="qa"><label>On hand<input name="qty" type="number" step="any" inputmode="decimal"></label><label>Unit<input name="unit" list="units" placeholder="board ft"></label>
 <label>Low at or below<input name="low" type="number" step="any" inputmode="decimal"></label><label>Cost per unit ($)<input name="cost" type="number" step="0.01" inputmode="decimal"></label></div>
 <label>Supplier link<input name="link" type="url" placeholder="https://"></label>
@@ -191,7 +193,15 @@ const g={};M.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(m=>(g[m.c
 mList.innerHTML=Object.keys(CATS).filter(c=>g[c]).map(c=>`<h3 style="margin:8px 0 0">${CATS[c]}</h3>`+g[c].map(mRow).join('')).join('')}
 function adjM(id,d){const m=S.materials.find(x=>x.id==id);m.qty=Math.max(0,Math.round(((+m.qty||0)+d)*100)/100);save();R()}
 function delM(id){if(confirm('Delete this material?')){S.materials=S.materials.filter(x=>x.id!=id);save();R()}}
-let mid=null;function editM(id){mid=id||null;const m=S.materials.find(x=>x.id==id)||{cat:'wood'};['name','cat','qty','unit','low','cost','link'].forEach(k=>mf.elements[k].value=m[k]==null?'':m[k]);mdlg.showModal()}
+// ---- Material presets for the Add/Edit form ----
+const MP={wood:[['Walnut','board ft'],...'Hard maple,Soft maple,Cherry,Red oak,White oak,Ash,Hickory,Mahogany,Sapele,Padauk,Purpleheart,Cedar,Pine,Poplar'.split(',').map(n=>[n,'board ft']),['Baltic birch plywood','sheets'],['Plywood','sheets'],['MDF','sheets']],
+hardware:[['8" black piano hinges','pcs'],['Piano hinge (other size)','pcs'],['Butt hinges','pcs'],['Euro / concealed hinges','pcs'],['Casters 1"','pcs'],['Casters 2"','pcs'],['Casters 3"','pcs'],['Casters 4"','pcs'],...'Drawer slides,Handles / pulls,Knobs,Magnetic catches,Lid stays,Corner brackets,Threaded inserts,Rubber feet,Wood screws #6,Wood screws #8,Wood screws #10,Pocket-hole screws,1.25" pin nails,18ga brad nails,23ga pin nails,Dowels,Biscuits,Dominoes,Bolts / nuts / washers,Keyhole hangers'.split(',').map(n=>[n,'pcs'])],
+finish:[['Deep-pour epoxy','oz'],['Tabletop epoxy','oz'],['Mineral oil','oz'],['Board butter','oz'],['Danish oil','oz'],['Polyurethane','oz'],['Wood glue','oz'],['CA glue','oz'],['Stain','oz'],['Mica powder','g']],
+abrasives:[...[80,120,180,220,320].map(g=>['Sanding discs '+g+' grit','pcs']),['Sandpaper sheets','sheets'],['Steel wool','pads']],other:[]};
+function fillPre(){const c=mf.elements.cat.value;mPre.innerHTML=(MP[c]||[]).map((p,i)=>`<option value="${i}">${esc(p[0])}</option>`).join('')+'<option value="x">Other (type it)</option>';mThkL.style.display=c==='wood'?'':'none';mSizeL.style.display=c==='hardware'?'':'none';mThk.value='';mSize.value=''}
+function applyPre(){const c=mf.elements.cat.value,p=(MP[c]||[])[mPre.value];if(!p)return;const e=mf.elements;e.name.value=[p[0],c==='wood'?mThk.value:'',c==='hardware'?mSize.value.trim():''].filter(Boolean).join(' ');e.unit.value=p[1]}
+mf.elements.cat.onchange=()=>{fillPre();applyPre()};mPre.onchange=mThk.onchange=mSize.oninput=applyPre;
+let mid=null;function editM(id){mid=id||null;const m=S.materials.find(x=>x.id==id)||{cat:'wood'};mf.elements.cat.value=m.cat||'other';fillPre();['name','qty','unit','low','cost','link'].forEach(k=>mf.elements[k].value=m[k]==null?'':m[k]);if(id)mPre.value='x';else applyPre();mdlg.showModal()}
 mdlg.addEventListener('close',()=>{if(mdlg.returnValue!=='save')return;const e=mf.elements,num=v=>v===''?'':parseFloat(v)||0;
 const d={name:e.name.value.trim(),cat:e.cat.value,qty:num(e.qty.value)||0,unit:e.unit.value.trim(),low:num(e.low.value),cost:num(e.cost.value)||0,link:e.link.value.trim()};if(!d.name)return;
 if(mid)Object.assign(S.materials.find(x=>x.id==mid),d);else S.materials.push({id:Math.random().toString(36).slice(2),...d});save();R()});
@@ -209,7 +219,7 @@ function useMats(id){const p=S.projects.find(x=>x.id==id);let c=0;p.materialsUse
 if(c){p.costs=p.costs||[];const v=p.materialsUsed.filter(l=>l.used).reduce((a,l)=>a+(+l.qty||0)*(+(MAT(l.mid)||{}).cost||0),0);const ci=p.costs.find(x=>x.name==='Materials from stock');if(v){if(ci)ci.amount=Math.round(v*100)/100;else p.costs.push({name:'Materials from stock',amount:Math.round(v*100)/100})}}save();R()}
 let uid=null,uRemoved=[];
 function uRow(l){const d=document.createElement('div');d.className='ul';d.dataset.id=l.id||'';d.dataset.used=l.used?'1':'';
-d.innerHTML=`<select ${l.used?'disabled':''}>${S.materials.map(m=>`<option value="${m.id}" ${m.id==l.mid?'selected':''}>${esc(m.name)}</option>`).join('')}</select><input type="number" step="any" inputmode="decimal" placeholder="Qty" value="${l.qty==null?'':l.qty}" ${l.used?'disabled':''}><span class="un"></span><button type="button" class="d">✕</button>`;
+d.innerHTML=`<select ${l.used?'disabled':''}>${Object.keys(CATS).map(c=>{const g=S.materials.filter(m=>(m.cat||'other')===c);return g.length?`<optgroup label="${CATS[c]}">`+g.map(m=>`<option value="${m.id}" ${m.id==l.mid?'selected':''}>${esc(m.name)} (${fq(m.qty)} ${esc(m.unit||'')} on hand)</option>`).join('')+'</optgroup>':''}).join('')}</select><input type="number" step="any" inputmode="decimal" placeholder="Qty" value="${l.qty==null?'':l.qty}" ${l.used?'disabled':''}><span class="un"></span><button type="button" class="d">✕</button>`;
 const un=()=>{const m=MAT(d.querySelector('select').value);d.querySelector('.un').innerHTML=(m?esc(m.unit||''):'')+(l.used?'<br><span class="ok">used</span>':'')};d.querySelector('select').onchange=un;un();
 d.querySelector('button').onclick=()=>{if(l.used)uRemoved.push(l);d.remove()};ulist.appendChild(d)}
 function mats(id){if(!S.materials.length){alert('Add materials in the Materials tab first.');tab('m');return}uid=id;uRemoved=[];const p=S.projects.find(x=>x.id==id);uname.textContent=p.name+' — materials used';ulist.innerHTML='';(p.materialsUsed.length?p.materialsUsed:[{}]).forEach(uRow);udlg.showModal()}
