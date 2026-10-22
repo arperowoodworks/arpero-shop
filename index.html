@@ -35,15 +35,18 @@ body{background:#fff;color:#111}h2,details summary{color:#000}.hud,.card{backgro
 button{background:#fff;color:#111;border:2px solid #111}button.p{background:#111;color:#fff}button.d{background:#fff;border-color:#b00;color:#b00}
 .red{color:#c00}.ok{color:#111}dialog{background:#fff;color:#111}dialog input,dialog textarea{background:#f5f5f5;color:#111;border-color:#111}.money{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin-top:8px;padding:8px 10px;border:1px dashed #111;border-radius:10px}.money b{font-weight:800}.neg{color:#c00}.pos{color:#0a7a2a}
 .tot{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tot div{border:2px solid #111;border-radius:12px;padding:8px;text-align:center;font-size:13px}.tot b{display:block;font-size:18px}
-.ci{display:flex;gap:6px;margin:6px 0}.ci input{flex:1}.ci input.amt{flex:0 0 90px}.tabs{display:flex;gap:8px;margin:12px 0 0}.tabs button{flex:1}.tabs button.on{background:#111;color:#fff}
+.ci{display:flex;gap:6px;margin:6px 0}.ci input{flex:1}.ci input.amt{flex:0 0 90px}.tabs{display:flex;gap:8px;margin:12px 0 0}.tabs button{flex:1;padding:8px 2px;font-size:14px;white-space:nowrap}.tabs button.on{background:#111;color:#fff}
 .st{display:inline-block;font-size:12px;font-weight:800;padding:2px 8px;border-radius:20px;border:1px solid #111}.st.np{background:#fff;color:#c00;border-color:#c00}.st.pp{background:#fff3c4}.st.pd{background:#111;color:#fff}
 .lg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lg h3{margin:4px 0;font-size:16px}.le{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd;padding:6px 0;font-size:15px}.le small{display:block;color:#666;font-size:12px}
 .le button{min-height:34px;min-width:34px;padding:0 8px;font-size:14px}.lsum{font-weight:800;border-top:2px solid #111;padding-top:6px;margin-top:4px}
 .qa{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qa input{font-size:16px;padding:10px;border-radius:10px;border:2px solid #111;width:100%}
-select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #111;background:#f5f5f5}</style></head><body>
+select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid #111;background:#f5f5f5}.mi{border-bottom:1px solid #ddd;padding:8px 0}.mi .top{display:flex;justify-content:space-between;align-items:center;gap:8px}.mi .qty{display:flex;align-items:center;gap:6px}.mi .qty button{min-width:40px;min-height:40px;padding:0;font-size:20px}.mi .qty b{min-width:64px;text-align:center}.lowb{background:#c00;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:6px}.lowbox{border:2px solid #c00}.tabs .cnt{background:#c00;color:#fff;border-radius:20px;padding:0 6px;font-size:12px;margin-left:4px}.ph{color:#888;font-size:14px;line-height:1.6}
+.ul{display:flex;gap:6px;align-items:center;margin:6px 0}.ul select{flex:1}.ul input{flex:0 0 70px;font-size:16px;padding:8px;border:1px solid #111;border-radius:10px}.ul .un{flex:0 0 54px;font-size:13px}.ul .ok{font-size:12px;font-weight:800}.short{color:#c00;font-weight:700;font-size:13px}.used{font-size:12px;background:#111;color:#fff;border-radius:20px;padding:1px 7px}
+.rooms{display:flex;gap:8px;margin:8px 0}.rooms button{flex:1}.rooms button.on{background:#111;color:#fff}.plan{position:relative;width:100%;border:3px solid #111;background-color:#fff;background-image:linear-gradient(#e4e4e4 1px,transparent 1px),linear-gradient(90deg,#e4e4e4 1px,transparent 1px);touch-action:none;overflow:hidden}.it{position:absolute;border:2px solid #111;background:#f2f2f2;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;overflow:hidden;cursor:grab;touch-action:none;user-select:none}.it.sel{background:#111;color:#fff}
+</style></head><body>
 <header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1></header>
 <div class="hud" id="hud"></div><div class="tot" id="totEl"></div><div class="focus" id="focusEl"></div>
-<div class="tabs"><button id="tP" class="on" onclick="tab('p')">Projects</button><button id="tL" onclick="tab('l')">Log</button></div>
+<div class="tabs"><button id="tP" class="on" onclick="tab('p')">Projects</button><button id="tL" onclick="tab('l')">Log</button><button id="tM" onclick="tab('m')">Materials<span id="mCnt"></span></button><button id="tY" onclick="tab('y')">Layout</button></div>
 <div id="vP"><h2>Projects</h2><div id="active"></div>
 <details id="fin"><summary>Finished</summary><div id="done"></div></details>
 <h2>Made to order (Shop)</h2><div id="shop"></div></div>
@@ -52,6 +55,13 @@ select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px soli
 <div class="row"><button style="flex:1" onclick="addLog('exp')">＋ Expense</button><button class="p" style="flex:1" onclick="addLog('inc')">＋ Income</button></div></div>
 <div class="card lg"><div><h3>Material Expenses</h3><div id="lExp"></div></div><div><h3>Income</h3><div id="lInc"></div></div></div>
 <div class="card" id="lNet"></div></div>
+<div id="vM" hidden><h2>Materials stock</h2><div class="card" id="mLow" hidden></div><div class="card" id="mNeed" hidden></div>
+<div class="card"><div class="top"><span>Stock value on hand</span><b id="mVal"></b></div><button class="p" style="width:100%;margin-top:8px" onclick="editM()">＋ Material</button></div>
+<div class="card" id="mList"></div></div>
+<div id="vY" hidden><h2>Layout</h2><div class="rooms" id="roomTg"></div><div class="sub" id="roomSz"></div>
+<div class="plan" id="plan"></div><div class="row" id="selBar" style="margin-top:8px"></div>
+<div class="card"><label>Add item<select id="preSel"></select></label><button class="p" style="width:100%;margin-top:6px" onclick="addItem()">＋ Add to room</button>
+<div class="qa" style="margin-top:8px"><label>Room width (ft)<input id="rW" type="number" step="0.5" onchange="setRoom()"></label><label>Room length (ft)<input id="rH" type="number" step="0.5" onchange="setRoom()"></label></div></div></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
 <button class="fab p" onclick="edit()">＋ Project</button>
 <dialog id="dlg"><form method="dialog" id="f">
@@ -66,6 +76,20 @@ select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px soli
 <label>Costs</label><div id="clist"></div><button type="button" onclick="addCI()">＋ Cost item</button>
 <div class="row" style="margin-top:6px"></div><div class="sub" id="cprev"></div>
 <div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
+<dialog id="mdlg"><form method="dialog" id="mf">
+<label>Name<input name="name" required placeholder="Walnut 8/4"></label>
+<label>Category<select name="cat"><option value="wood">Wood</option><option value="finish">Finish / epoxy</option><option value="hardware">Hardware</option><option value="abrasives">Abrasives</option><option value="other">Other</option></select></label>
+<div class="qa"><label>On hand<input name="qty" type="number" step="any" inputmode="decimal"></label><label>Unit<input name="unit" list="units" placeholder="board ft"></label>
+<label>Low at or below<input name="low" type="number" step="any" inputmode="decimal"></label><label>Cost per unit ($)<input name="cost" type="number" step="0.01" inputmode="decimal"></label></div>
+<label>Supplier link<input name="link" type="url" placeholder="https://"></label>
+<div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
+<datalist id="units"><option value="board ft"><option value="oz"><option value="pcs"><option value="sheets"><option value="sets"><option value="ft"><option value="gal"></datalist>
+<dialog id="sdlg"><form method="dialog"><div class="name">Add this expense to stock?</div>
+<label>Material<select id="sMat"></select></label><label>Quantity bought<input id="sQty" type="number" step="any" inputmode="decimal"></label>
+<div class="row"><button class="p" value="save">Add to stock</button><button value="cancel" formnovalidate>Skip</button></div></form></dialog>
+<dialog id="udlg"><form method="dialog"><div class="name" id="uname"></div><div class="sub">Pick materials from your stock. Stock is taken out only when you tap "Use materials" — each line is taken out once.</div>
+<div id="ulist"></div><button type="button" onclick="uRow({})">＋ Material line</button><div class="sub" id="uprev"></div>
+<div class="row"><button class="p" value="save">Save</button><button value="use">Save &amp; use materials</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
 <script>
 const K='arperoShop1',TODAY=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const P=(n,c,due,ship,notes,cat)=>({id:Math.random().toString(36).slice(2),name:n,customer:c,due,ship,notes,pct:0,done:false,cat:cat||'job',maxPct:0,price:0,costs:[],paid:0,product:''});
@@ -76,7 +100,10 @@ P("Josh's bar table","Josh","2026-11-05","","Confirm exact date"),
 P("Wheel caps","","","","Ram 2500 set, best-seller restock"),
 P("Joann's coasters","Joann","","",""),P("Kevin's coasters","Kevin","","",""),P("Caroline's height board","Caroline","","",""),
 ...["Walnut Dining Chair","Cherry Wood Bookshelf","Walnut Coffee Table","White Oak Coffee Table"].map(n=>P(n,"","","","Waiting for order","shop"))]}}
-let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.log=S.log||[];
+function mig(d){(d.projects||[]).forEach(p=>{if(!Array.isArray(p.materialsUsed))p.materialsUsed=[]});if(!Array.isArray(d.layout))d.layout=[];
+if(!d.layout.find(r=>r.id==='shop'))d.layout.unshift({id:'shop',name:'Shop',w:22,h:22,items:[]});
+if(!d.layout.find(r=>r.id==='office'))d.layout.push({id:'office',name:'Office',w:9,h:10,items:[{id:'o1',name:'Computer desk + computer',x:0.5,y:0.5,w:5,h:2.5},{id:'o2',name:'Cricut Maker 4',x:6.5,y:0.5,w:2,h:1},{id:'o3',name:'Bambu X1C',x:6.5,y:7.5,w:1.5,h:1.5}]})}
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.log=S.log||[];if(!Array.isArray(S.materials))S.materials=[];mig(S);
 const save=()=>localStorage.setItem(K,JSON.stringify(S));
 const LV=[[0,'Apprentice'],[150,'Sawdust Sweeper'],[400,'Journeyman'],[800,'Joiner'],[1400,'Craftsman'],[2200,'Cabinetmaker'],[3200,'Master Woodworker'],[4500,'Grand Master of the Grain']];
 const lvl=x=>{let i=0;LV.forEach((l,j)=>{if(x>=l[0])i=j});return i};
@@ -91,10 +118,10 @@ const dt=p.done?'✅ '+p.doneOn:d===null?'No date':d<0?(-d)+'d overdue':d===0?'D
 const idle=p.cat==='shop'&&p.pct===0;
 return `<div class="card"><div class="top"><div><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.customer)}${p.due?' · '+p.due:''}</div></div><div class="due ${red?'red':'ok'}">${idle?'Waiting for order':dt}</div></div>
 ${p.ship?`<span class="tag">📦 ${esc(p.ship)}</span>`:''}${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
-${moneyHTML(p)}${payHTML(p)}<div class="bar"><i style="width:${p.pct}%"></i><span>${p.pct}%</span></div>
-${p.done?`<div class="row"><button onclick="reopen('${p.id}')">Reopen</button><button onclick="costs('${p.id}')">💲 Costs</button><button class="d" onclick="del('${p.id}')">Delete</button></div>`:
+${moneyHTML(p)}${payHTML(p)}${muHTML(p)}<div class="bar"><i style="width:${p.pct}%"></i><span>${p.pct}%</span></div>
+${p.done?`<div class="row"><button onclick="reopen('${p.id}')">Reopen</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">Delete</button></div>`:
 `<input type="range" min="0" max="100" step="5" value="${p.pct}" onchange="setPct('${p.id}',this.value)">
-<div class="row"><button onclick="setPct('${p.id}',${p.pct-10})">−10%</button><button onclick="setPct('${p.id}',${p.pct+10})">+10%</button><button class="p" onclick="finish('${p.id}')">Done ✓</button><button onclick="edit('${p.id}')">Edit</button><button onclick="costs('${p.id}')">💲 Costs</button><button class="d" onclick="del('${p.id}')">🗑</button></div>`}</div>`}
+<div class="row"><button onclick="setPct('${p.id}',${p.pct-10})">−10%</button><button onclick="setPct('${p.id}',${p.pct+10})">+10%</button><button class="p" onclick="finish('${p.id}')">Done ✓</button><button onclick="edit('${p.id}')">Edit</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">🗑</button></div>`}</div>`}
 const byDue=(a,b)=>(a.due||'9999')<(b.due||'9999')?-1:(a.due||'9999')>(b.due||'9999')?1:0;
 function R(){totals();const i=lvl(S.xp),cur=LV[i][0],nx=LV[i+1]?LV[i+1][0]:cur,pc=nx>cur?(S.xp-cur)/(nx-cur)*100:100;
 const live=S.streak&&(S.last===TODAY()||days(S.last)===-1)?S.streak:0;
@@ -106,10 +133,10 @@ done.innerHTML=dn.map(card).join('')||'<div class="sub">Nothing finished yet</di
 let eid=null;function edit(id){eid=id||null;const p=S.projects.find(x=>x.id==id)||{};['name','customer','due','ship','notes'].forEach(k=>f.elements[k].value=p[k]||'');dlg.showModal()}
 dlg.addEventListener('close',()=>{if(dlg.returnValue!=='save')return;const v={};['name','customer','due','ship','notes'].forEach(k=>v[k]=f.elements[k].value.trim());if(!v.name)return;
 if(eid)Object.assign(S.projects.find(x=>x.id==eid),v);else S.projects.push(Object.assign(P(v.name,v.customer,v.due,v.ship,v.notes),{}));save();R()});
-function del(id){if(confirm('Delete this project?')){S.projects=S.projects.filter(p=>p.id!=id);save();R()}}
+function del(id){if(confirm('Delete this project?')){const p=S.projects.find(x=>x.id==id);const u=(p.materialsUsed||[]).filter(l=>l.used);if(u.length&&confirm('Return the materials this project used to stock?'))u.forEach(retLine);S.projects=S.projects.filter(p=>p.id!=id);save();R()}}
 function reopen(id){const p=S.projects.find(x=>x.id==id);p.done=false;p.pct=90;save();R()}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='arpero-shop-'+TODAY()+'.json';a.click()}
-imp.onchange=e=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.projects))throw 0;d.log=d.log||[];S=d;save();R();alert('Backup restored')}catch(x){alert('Not a valid backup file')}};r.readAsText(e.target.files[0])};
+imp.onchange=e=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.projects))throw 0;d.log=d.log||[];if(!Array.isArray(d.materials))d.materials=[];mig(d);S=d;save();R();alert('Backup restored')}catch(x){alert('Not a valid backup file')}};r.readAsText(e.target.files[0])};
 
 
 // ---- Website products (baked; Squarespace JSON has no CORS so no live refresh) ----
@@ -123,13 +150,13 @@ function payHTML(p){const i=payInfo(p);if(!i.st)return'';const c=i.st==='Paid'?'
 return `<div class="row" style="align-items:center;font-size:14px"><span class="st ${c}">${i.st}</span><span>Paid <b>${$$(i.pd)}</b> of ${$$(i.pr)}</span>${i.owed?`<span>Owed <b class="neg">${$$(i.owed)}</b></span><button onclick="fullPay('${p.id}')">✔ Mark fully paid</button>`:''}</div>`}
 function fullPay(id){const p=S.projects.find(x=>x.id==id);p.paid=+p.price||0;save();R()}
 // ---- Log ----
-function addLog(t){const a=parseFloat(lAmt.value);if(!a){lAmt.focus();return}S.log=S.log||[];S.log.push({id:Math.random().toString(36).slice(2),type:t,amount:a,note:lNote.value.trim(),date:lDate.value||TODAY()});lAmt.value='';lNote.value='';save();R()}
+function addLog(t){const a=parseFloat(lAmt.value);if(!a){lAmt.focus();return}S.log=S.log||[];S.log.push({id:Math.random().toString(36).slice(2),type:t,amount:a,note:lNote.value.trim(),date:lDate.value||TODAY()});lAmt.value='';lNote.value='';save();R();if(t==='exp'&&S.materials.length)offerStock()}
 function delLog(id){if(confirm('Delete this entry?')){S.log=S.log.filter(x=>x.id!=id);save();R()}}
 function renderLog(){const L=(S.log||[]).slice().sort((a,b)=>a.date<b.date?-1:1);const row=x=>`<div class="le"><div>${$$(x.amount)}<small>${esc(x.note)} ${x.date.slice(5)}</small></div><button class="d" onclick="delLog('${x.id}')">✕</button></div>`;
 const E=L.filter(x=>x.type==='exp'),I=L.filter(x=>x.type==='inc'),te=E.reduce((a,x)=>a+x.amount,0),ti=I.reduce((a,x)=>a+x.amount,0);
 lExp.innerHTML=(E.map(row).join('')||'<div class="sub">None yet</div>')+`<div class="lsum">= ${$$(te)}</div>`;lInc.innerHTML=(I.map(row).join('')||'<div class="sub">None yet</div>')+`<div class="lsum">= ${$$(ti)}</div>`;
 lNet.innerHTML=`<div class="top"><span>Log net (income − expenses)</span><b class="${ti-te<0?'neg':'pos'}">${$$(ti-te)}</b></div><div class="sub">Log entries are extra money not tied to a project. Project payments and costs are counted separately in the summary.</div>`;if(!lDate.value)lDate.value=TODAY();return{te,ti}}
-function tab(t){vP.hidden=t!=='p';vL.hidden=t!=='l';tP.classList.toggle('on',t==='p');tL.classList.toggle('on',t==='l')}
+function tab(t){vP.hidden=t!=='p';vL.hidden=t!=='l';vM.hidden=t!=='m';tP.classList.toggle('on',t==='p');tL.classList.toggle('on',t==='l');tM.classList.toggle('on',t==='m');vY.hidden=t!=='y';tY.classList.toggle('on',t==='y');document.querySelector('.fab').hidden=t==='m'||t==='y';if(t==='y')renderY()}
 // ---- Money (structure: p.price number, p.costs [{name,amount}]) ----
 const COST_PRESETS=['Wood','Epoxy','Finish','Hardware','Shipping','Fees'];
 const $$=n=>'$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -148,5 +175,67 @@ function costs(id){cid=id;const p=S.projects.find(x=>x.id==id);cname.textContent
 cf.elements.price.oninput=cprevU;
 cdlg.addEventListener('close',()=>{if(cdlg.returnValue!=='save')return;const p=S.projects.find(x=>x.id==cid);p.price=parseFloat(cf.elements.price.value)||0;p.paid=parseFloat(cf.elements.paid.value)||0;p.product=prodSel.value===''?'':PRODUCTS[prodSel.value][0];p.costs=readC();save();R()});
 document.body.insertAdjacentHTML('beforeend','<datalist id="cpre">'+COST_PRESETS.map(n=>`<option value="${n}">`).join('')+'</datalist>');
+// ---- Materials stock (S.materials [{id,name,cat,qty,unit,low,cost,link}]) ----
+const CATS={wood:'Wood',finish:'Finish / epoxy',hardware:'Hardware',abrasives:'Abrasives',other:'Other'};
+const isLow=m=>m.low!==''&&m.low!=null&&+m.qty<=+m.low;
+const fq=n=>String(Math.round((+n||0)*100)/100);
+function mRow(m){const lk=/^https?:\/\//.test(m.link||'')?`<a href="${esc(m.link)}" target="_blank" rel="noopener">Supplier</a> · `:'';
+return`<div class="mi"><div class="top"><div><b>${esc(m.name)}</b>${isLow(m)?'<span class="lowb">Low</span>':''}<small class="sub" style="display:block">${CATS[m.cat]||'Other'} · ${lk}${m.cost?$$(m.cost)+'/'+esc(m.unit||'unit'):'no cost set'}${m.low!==''&&m.low!=null?' · low at '+fq(m.low):''}</small></div>
+<div class="qty"><button onclick="adjM('${m.id}',-1)">−</button><b>${fq(m.qty)} ${esc(m.unit||'')}</b><button onclick="adjM('${m.id}',1)">＋</button></div></div>
+<div class="row" style="margin-top:4px"><button onclick="editM('${m.id}')">Edit</button><button class="d" onclick="delM('${m.id}')">Delete</button></div></div>`}
+function renderM(){const M=S.materials,low=M.filter(isLow),val=M.reduce((a,m)=>a+Math.max(0,+m.qty||0)*(+m.cost||0),0);
+mCnt.innerHTML=low.length?`<span class="cnt">${low.length}</span>`:'';mVal.textContent=$$(val);
+mLow.hidden=!low.length;mLow.className='card lowbox';mLow.innerHTML=`<h3 style="margin:2px 0;color:#c00">Low stock (${low.length})</h3>`+low.map(m=>`<div class="le"><div>${esc(m.name)}<small>${fq(m.qty)} ${esc(m.unit||'')} left · low at ${fq(m.low)}</small></div><button onclick="adjM('${m.id}',1)">＋</button></div>`).join('');
+if(!M.length){mList.innerHTML='<div class="ph"><b>No materials yet.</b> Tap ＋ Material to add things like:<br>· Walnut, 8/4 (board ft)<br>· Deep-pour epoxy (oz)<br>· 8-inch black piano hinges (pcs)<br>· 1-inch casters (pcs)</div>';return}
+const g={};M.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(m=>(g[m.cat]=g[m.cat]||[]).push(m));
+mList.innerHTML=Object.keys(CATS).filter(c=>g[c]).map(c=>`<h3 style="margin:8px 0 0">${CATS[c]}</h3>`+g[c].map(mRow).join('')).join('')}
+function adjM(id,d){const m=S.materials.find(x=>x.id==id);m.qty=Math.max(0,Math.round(((+m.qty||0)+d)*100)/100);save();R()}
+function delM(id){if(confirm('Delete this material?')){S.materials=S.materials.filter(x=>x.id!=id);save();R()}}
+let mid=null;function editM(id){mid=id||null;const m=S.materials.find(x=>x.id==id)||{cat:'wood'};['name','cat','qty','unit','low','cost','link'].forEach(k=>mf.elements[k].value=m[k]==null?'':m[k]);mdlg.showModal()}
+mdlg.addEventListener('close',()=>{if(mdlg.returnValue!=='save')return;const e=mf.elements,num=v=>v===''?'':parseFloat(v)||0;
+const d={name:e.name.value.trim(),cat:e.cat.value,qty:num(e.qty.value)||0,unit:e.unit.value.trim(),low:num(e.low.value),cost:num(e.cost.value)||0,link:e.link.value.trim()};if(!d.name)return;
+if(mid)Object.assign(S.materials.find(x=>x.id==mid),d);else S.materials.push({id:Math.random().toString(36).slice(2),...d});save();R()});
+function offerStock(){sMat.innerHTML=S.materials.map(m=>`<option value="${m.id}">${esc(m.name)} (${esc(m.unit||'units')})</option>`).join('');sQty.value='';sdlg.showModal()}
+sdlg.addEventListener('close',()=>{if(sdlg.returnValue!=='save')return;const q=parseFloat(sQty.value);if(!q)return;const m=S.materials.find(x=>x.id==sMat.value);m.qty=Math.round(((+m.qty||0)+q)*100)/100;save();R()});
+// ---- Project materials (p.materialsUsed [{id,mid,qty,used}]; used=true means already taken out of stock) ----
+const MAT=id=>S.materials.find(m=>m.id==id);
+function retLine(l){const m=MAT(l.mid);if(m)m.qty=Math.round(((+m.qty||0)+(+l.qty||0))*100)/100;l.used=false}
+function needOf(p){const n={};(p.materialsUsed||[]).forEach(l=>{if(!l.used&&MAT(l.mid))n[l.mid]=(n[l.mid]||0)+(+l.qty||0)});return n}
+function muHTML(p){const L=(p.materialsUsed||[]).filter(l=>MAT(l.mid));if(!L.length)return'';const n=needOf(p);
+const sh=Object.entries(n).map(([id,q])=>{const m=MAT(id),d=q-(+m.qty||0);return d>0?`<div class="short">⚠ Need ${fq(d)} more ${esc(m.unit||'')} of ${esc(m.name)}</div>`:''}).join('');
+const pend=L.some(l=>!l.used);
+return`<div class="money" style="display:block"><b>Materials:</b> ${L.map(l=>{const m=MAT(l.mid);return`${esc(m.name)} ${fq(l.qty)} ${esc(m.unit||'')}${l.used?' <span class="used">used</span>':''}`}).join(' · ')}${sh}${pend&&!p.done?`<button style="margin-top:6px;width:100%" onclick="useMats('${p.id}')">Use materials (take from stock)</button>`:''}</div>`}
+function useMats(id){const p=S.projects.find(x=>x.id==id);let c=0;p.materialsUsed.forEach(l=>{const m=MAT(l.mid);if(l.used||!m)return;m.qty=Math.max(0,Math.round(((+m.qty||0)-(+l.qty||0))*100)/100);l.used=true;c++});
+if(c){p.costs=p.costs||[];const v=p.materialsUsed.filter(l=>l.used).reduce((a,l)=>a+(+l.qty||0)*(+(MAT(l.mid)||{}).cost||0),0);const ci=p.costs.find(x=>x.name==='Materials from stock');if(v){if(ci)ci.amount=Math.round(v*100)/100;else p.costs.push({name:'Materials from stock',amount:Math.round(v*100)/100})}}save();R()}
+let uid=null,uRemoved=[];
+function uRow(l){const d=document.createElement('div');d.className='ul';d.dataset.id=l.id||'';d.dataset.used=l.used?'1':'';
+d.innerHTML=`<select ${l.used?'disabled':''}>${S.materials.map(m=>`<option value="${m.id}" ${m.id==l.mid?'selected':''}>${esc(m.name)}</option>`).join('')}</select><input type="number" step="any" inputmode="decimal" placeholder="Qty" value="${l.qty==null?'':l.qty}" ${l.used?'disabled':''}><span class="un"></span><button type="button" class="d">✕</button>`;
+const un=()=>{const m=MAT(d.querySelector('select').value);d.querySelector('.un').innerHTML=(m?esc(m.unit||''):'')+(l.used?'<br><span class="ok">used</span>':'')};d.querySelector('select').onchange=un;un();
+d.querySelector('button').onclick=()=>{if(l.used)uRemoved.push(l);d.remove()};ulist.appendChild(d)}
+function mats(id){if(!S.materials.length){alert('Add materials in the Materials tab first.');tab('m');return}uid=id;uRemoved=[];const p=S.projects.find(x=>x.id==id);uname.textContent=p.name+' — materials used';ulist.innerHTML='';(p.materialsUsed.length?p.materialsUsed:[{}]).forEach(uRow);udlg.showModal()}
+udlg.addEventListener('close',()=>{const v=udlg.returnValue;if(v!=='save'&&v!=='use')return;const p=S.projects.find(x=>x.id==uid);const old=p.materialsUsed;
+p.materialsUsed=[...ulist.children].map(d=>{if(d.dataset.used)return old.find(l=>l.id==d.dataset.id);const q=parseFloat(d.querySelector('input').value);if(!q)return null;return{id:d.dataset.id||Math.random().toString(36).slice(2),mid:d.querySelector('select').value,qty:q,used:false}}).filter(Boolean);
+if(uRemoved.length&&confirm('Return the removed materials to stock?'))uRemoved.forEach(retLine);save();if(v==='use')useMats(uid);else R()});
+function needToBuy(){const n={};S.projects.filter(p=>!p.done).forEach(p=>Object.entries(needOf(p)).forEach(([id,q])=>n[id]=(n[id]||0)+q));
+return Object.entries(n).map(([id,q])=>{const m=MAT(id);return{m,d:q-(+m.qty||0)}}).filter(x=>x.d>0)}
+const _R=R;R=function(){_R();renderM();const nb=needToBuy();mNeed.hidden=!nb.length;mNeed.innerHTML=`<h3 style="margin:2px 0">Need to buy (${nb.length})</h3><div class="sub">What your open projects still need, minus what's on hand</div>`+nb.map(x=>`<div class="le"><div>${esc(x.m.name)}<small>${x.m.cost?'≈ '+$$(x.d*x.m.cost):''}</small></div><b>${fq(x.d)} ${esc(x.m.unit||'')}</b></div>`).join('')+(nb.some(x=>x.m.cost)?`<div class="lsum">≈ ${$$(nb.reduce((a,x)=>a+x.d*(+x.m.cost||0),0))}</div>`:'');if(!vY.hidden)renderY()};
+// ---- Layout (S.layout [{id,name,w,h,items:[{id,name,x,y,w,h}]}], feet) ----
+const PRE={shop:[['Workbench',6,3],['Table saw (Skil)',4,3],['Jointer (Wahuda 10")',5,2],['Planer (DW735)',2,2],['Bandsaw (Bauer 14")',2.5,2.5],['Miter saw station',8,2],['Router table',3,2],['Assembly table',6,4],['Lumber rack',8,1.5],['Dust collector',2.5,2.5],['Laser (LaserPecker)',1.5,1.5],['Shelf',4,1.5]],
+office:[['Desk',5,2.5],['Computer desk + computer',5,2.5],['Office chair',2,2],['Filing cabinet',1.5,2],['Shelf',3,1.2],['Printer stand',2,1.5],['Bambu X1C',1.5,1.5],['Cricut Maker 4',2,1],['Laser (LaserPecker)',1.5,1.5]]};
+let room='shop',selI=null;const RM=()=>S.layout.find(r=>r.id===room)||S.layout[0];
+function renderY(){const r=RM();roomTg.innerHTML=S.layout.map(x=>`<button class="${x.id===r.id?'on':''}" onclick="room='${x.id}';selI=null;renderY()">${esc(x.name)} ${fq(x.w)}×${fq(x.h)}</button>`).join('');
+roomSz.textContent=`${r.name}: ${fq(r.w)} × ${fq(r.h)} ft · each square = 1 ft · drag items to move, tap to select`;rW.value=r.w;rH.value=r.h;
+const W=plan.clientWidth||360,sc=W/r.w;plan.style.height=r.h*sc+'px';plan.style.backgroundSize=`${sc}px ${sc}px`;
+plan.innerHTML=r.items.map(i=>`<div class="it ${i.id===selI?'sel':''}" data-id="${i.id}" style="left:${i.x*sc}px;top:${i.y*sc}px;width:${i.w*sc}px;height:${i.h*sc}px">${esc(i.name)}</div>`).join('');
+const si=r.items.find(i=>i.id===selI);selBar.innerHTML=si?`<button onclick="rotI()">⟳ Rotate</button><button class="d" onclick="delI()">Remove ${esc(si.name)}</button>`:'';
+preSel.innerHTML=(PRE[r.id]||PRE.shop).map((p,k)=>`<option value="${k}">${esc(p[0])} (${p[1]}×${p[2]} ft)</option>`).join('');
+plan.querySelectorAll('.it').forEach(el=>{el.onpointerdown=e=>{const it=r.items.find(i=>i.id===el.dataset.id),sx=e.clientX,sy=e.clientY,ox=it.x,oy=it.y;let mv=false;el.setPointerCapture(e.pointerId);
+el.onpointermove=ev=>{const dx=(ev.clientX-sx)/sc,dy=(ev.clientY-sy)/sc;if(Math.abs(dx)+Math.abs(dy)>.2)mv=true;it.x=Math.max(0,Math.min(r.w-it.w,Math.round((ox+dx)*2)/2));it.y=Math.max(0,Math.min(r.h-it.h,Math.round((oy+dy)*2)/2));el.style.left=it.x*sc+'px';el.style.top=it.y*sc+'px'};
+el.onpointerup=()=>{el.onpointermove=null;if(!mv)selI=selI===it.id?null:it.id;save();renderY()}}})}
+function addItem(){const r=RM(),p=(PRE[r.id]||PRE.shop)[preSel.value];const it={id:Math.random().toString(36).slice(2),name:p[0],x:0,y:0,w:Math.min(p[1],r.w),h:Math.min(p[2],r.h)};r.items.push(it);selI=it.id;save();renderY()}
+function rotI(){const r=RM(),i=r.items.find(x=>x.id===selI);[i.w,i.h]=[i.h,i.w];i.x=Math.max(0,Math.min(r.w-i.w,i.x));i.y=Math.max(0,Math.min(r.h-i.h,i.y));save();renderY()}
+function delI(){const r=RM();r.items=r.items.filter(x=>x.id!==selI);selI=null;save();renderY()}
+function setRoom(){const r=RM();r.w=Math.max(4,+rW.value||r.w);r.h=Math.max(4,+rH.value||r.h);r.items.forEach(i=>{i.x=Math.min(i.x,Math.max(0,r.w-i.w));i.y=Math.min(i.y,Math.max(0,r.h-i.h))});save();renderY()}
+addEventListener('resize',()=>{if(!vY.hidden)renderY()});
 R();if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
 </script></body></html>
