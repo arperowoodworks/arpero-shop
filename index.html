@@ -45,6 +45,7 @@ select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px soli
 .rooms{display:flex;gap:8px;margin:8px 0}.rooms button{flex:1}.rooms button.on{background:#111;color:#fff}.plan{position:relative;width:100%;border:3px solid #111;background-color:#fff;background-image:linear-gradient(#e4e4e4 1px,transparent 1px),linear-gradient(90deg,#e4e4e4 1px,transparent 1px);touch-action:none;overflow:hidden}.it{position:absolute;border:2px solid #111;background:#f2f2f2;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;overflow:hidden;cursor:grab;touch-action:none;user-select:none}.it.sel{background:#111;color:#fff}
 html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;overflow-x:hidden;max-width:100%}button,a,label,select{touch-action:manipulation}
 input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-box}.plan,.plan .it{touch-action:none}
+.it .rh{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;background:#fff;border:3px solid #111;border-radius:50%;touch-action:none;box-sizing:border-box}.it{transform-origin:center;overflow:visible}
 </style></head><body>
 <header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1></header>
 <div class="hud" id="hud"></div><div class="tot" id="totEl"></div><div class="focus" id="focusEl"></div>
@@ -106,7 +107,7 @@ P("Joann's coasters","Joann","","",""),P("Kevin's coasters","Kevin","","",""),P(
 ...["Walnut Dining Chair","Cherry Wood Bookshelf","Walnut Coffee Table","White Oak Coffee Table"].map(n=>P(n,"","","","Waiting for order","shop"))]}}
 function mig(d){(d.projects||[]).forEach(p=>{if(!Array.isArray(p.materialsUsed))p.materialsUsed=[]});if(!Array.isArray(d.layout))d.layout=[];
 if(!d.layout.find(r=>r.id==='shop'))d.layout.unshift({id:'shop',name:'Shop',w:22,h:22,items:[]});
-if(!d.layout.find(r=>r.id==='office'))d.layout.push({id:'office',name:'Office',w:9,h:10,items:[{id:'o1',name:'Computer desk + computer',x:0.5,y:0.5,w:5,h:2.5},{id:'o2',name:'Cricut Maker 4',x:6.5,y:0.5,w:2,h:1},{id:'o3',name:'Bambu X1C',x:6.5,y:7.5,w:1.5,h:1.5}]})}
+d.layout.forEach(r=>(r.items||[]).forEach(i=>{if(i.a==null)i.a=0}));if(!d.layout.find(r=>r.id==='office'))d.layout.push({id:'office',name:'Office',w:9,h:10,items:[{id:'o1',name:'Computer desk + computer',x:0.5,y:0.5,w:5,h:2.5},{id:'o2',name:'Cricut Maker 4',x:6.5,y:0.5,w:2,h:1},{id:'o3',name:'Bambu X1C',x:6.5,y:7.5,w:1.5,h:1.5}]})}
 let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S)S=seed();S.log=S.log||[];if(!Array.isArray(S.materials))S.materials=[];mig(S);
 const save=()=>localStorage.setItem(K,JSON.stringify(S));
 const LV=[[0,'Apprentice'],[150,'Sawdust Sweeper'],[400,'Journeyman'],[800,'Joiner'],[1400,'Craftsman'],[2200,'Cabinetmaker'],[3200,'Master Woodworker'],[4500,'Grand Master of the Grain']];
@@ -235,19 +236,34 @@ const _R=R;R=function(){_R();renderM();const nb=needToBuy();mNeed.hidden=!nb.len
 const PRE={shop:[['Workbench',6,3],['Table saw (Skil)',4,3],['Jointer (Wahuda 10")',5,2],['Planer (DW735)',2,2],['Bandsaw (Bauer 14")',2.5,2.5],['Miter saw station',8,2],['Router table',3,2],['Assembly table',6,4],['Lumber rack',8,1.5],['Dust collector',2.5,2.5],['Laser (LaserPecker)',1.5,1.5],['Shelf',4,1.5]],
 office:[['Desk',5,2.5],['Computer desk + computer',5,2.5],['Office chair',2,2],['Filing cabinet',1.5,2],['Shelf',3,1.2],['Printer stand',2,1.5],['Bambu X1C',1.5,1.5],['Cricut Maker 4',2,1],['Laser (LaserPecker)',1.5,1.5]]};
 let room='shop',selI=null;const RM=()=>S.layout.find(r=>r.id===room)||S.layout[0];
+const q4=v=>Math.round(v*4)/4,ftin=v=>{const t=Math.round(v*12);return Math.floor(t/12)+"' "+(t%12)+'"'};
+function ext(i){const t=(i.a||0)*Math.PI/180,c=Math.abs(Math.cos(t)),n=Math.abs(Math.sin(t));return[(i.w*c+i.h*n)/2,(i.w*n+i.h*c)/2]}
+function clampI(i,r){const[bw,bh]=ext(i);let cx=i.x+i.w/2,cy=i.y+i.h/2;cx=bw*2>=r.w?r.w/2:Math.max(bw,Math.min(r.w-bw,cx));cy=bh*2>=r.h?r.h/2:Math.max(bh,Math.min(r.h-bh,cy));i.x=Math.round((cx-i.w/2)*1000)/1000;i.y=Math.round((cy-i.h/2)*1000)/1000}
+let SC=1;
+function drawPlan(){const r=RM(),W=plan.clientWidth||360,sc=SC=W/r.w;plan.style.height=r.h*sc+'px';plan.style.backgroundSize=`${sc}px ${sc}px`;
+plan.innerHTML=r.items.map(i=>`<div class="it ${i.id===selI?'sel':''}" data-id="${i.id}" style="left:${i.x*sc}px;top:${i.y*sc}px;width:${i.w*sc}px;height:${i.h*sc}px;transform:rotate(${i.a||0}deg)">${esc(i.name)}${i.id===selI?'<b class="rh" data-h="1"></b>':''}</div>`).join('');
+plan.querySelectorAll('.it').forEach(el=>{el.onpointerdown=e=>{e.preventDefault();const it=r.items.find(i=>i.id===el.dataset.id),sx=e.clientX,sy=e.clientY,ox=it.x,oy=it.y,ow=it.w,oh=it.h,rz=e.target.dataset.h;let mv=false;el.setPointerCapture(e.pointerId);
+const t=(it.a||0)*Math.PI/180,C=Math.cos(t),N=Math.sin(t);
+el.onpointermove=ev=>{const dx=(ev.clientX-sx)/sc,dy=(ev.clientY-sy)/sc;if(Math.abs(dx)+Math.abs(dy)>.15)mv=true;
+if(rz){const lx=dx*C+dy*N,ly=-dx*N+dy*C;it.w=Math.max(.25,q4(ow+lx));it.h=Math.max(.25,q4(oh+ly));const dw=(it.w-ow)/2,dh=(it.h-oh)/2;const cx=ox+ow/2+dw*C-dh*N,cy=oy+oh/2+dw*N+dh*C;it.x=cx-it.w/2;it.y=cy-it.h/2}
+else{it.x=ox+q4(dx);it.y=oy+q4(dy)}clampI(it,r);el.style.left=it.x*sc+'px';el.style.top=it.y*sc+'px';el.style.width=it.w*sc+'px';el.style.height=it.h*sc+'px';if(rz)syncBar()};
+el.onpointerup=()=>{el.onpointermove=null;if(!mv&&!rz){selI=selI===it.id?null:it.id;save();renderY()}else{save();drawPlan();syncBar()}}}})}
+function selBarHTML(){const si=RM().items.find(i=>i.id===selI);if(!si)return'';return`<div class="card" style="width:100%;margin:0"><b>${esc(si.name)}</b> <span class="sub" id="eSz"></span>
+<div class="qa"><label>Width (ft)<input id="eW" type="number" step="0.25" min="0.25" inputmode="decimal"></label><label>Length (ft)<input id="eH" type="number" step="0.25" min="0.25" inputmode="decimal"></label></div>
+<div class="row"><button onclick="rotBy(-15)">↺ 15°</button><button onclick="rotBy(15)">↻ 15°</button><button onclick="rotBy(90)">90°</button><label style="flex:1">Angle °<input id="eA" type="number" step="1" inputmode="numeric"></label></div>
+<div class="row"><button onclick="renI()">Rename</button><button class="d" onclick="delI()">Remove</button><button onclick="selI=null;renderY()">Done</button></div></div>`}
+function syncBar(){const i=RM().items.find(x=>x.id===selI);if(!i||!window.eW)return;if(document.activeElement!==eW)eW.value=i.w;if(document.activeElement!==eH)eH.value=i.h;if(document.activeElement!==eA)eA.value=i.a||0;eSz.textContent=`${ftin(i.w)} × ${ftin(i.h)} · ${i.a||0}°`}
+function cur(){return RM().items.find(x=>x.id===selI)}
 function renderY(){const r=RM();roomTg.innerHTML=S.layout.map(x=>`<button class="${x.id===r.id?'on':''}" onclick="room='${x.id}';selI=null;renderY()">${esc(x.name)} ${fq(x.w)}×${fq(x.h)}</button>`).join('');
-roomSz.textContent=`${r.name}: ${fq(r.w)} × ${fq(r.h)} ft · each square = 1 ft · drag items to move, tap to select`;rW.value=r.w;rH.value=r.h;
-const W=plan.clientWidth||360,sc=W/r.w;plan.style.height=r.h*sc+'px';plan.style.backgroundSize=`${sc}px ${sc}px`;
-plan.innerHTML=r.items.map(i=>`<div class="it ${i.id===selI?'sel':''}" data-id="${i.id}" style="left:${i.x*sc}px;top:${i.y*sc}px;width:${i.w*sc}px;height:${i.h*sc}px">${esc(i.name)}</div>`).join('');
-const si=r.items.find(i=>i.id===selI);selBar.innerHTML=si?`<button onclick="rotI()">⟳ Rotate</button><button class="d" onclick="delI()">Remove ${esc(si.name)}</button>`:'';
-preSel.innerHTML=(PRE[r.id]||PRE.shop).map((p,k)=>`<option value="${k}">${esc(p[0])} (${p[1]}×${p[2]} ft)</option>`).join('');
-plan.querySelectorAll('.it').forEach(el=>{el.onpointerdown=e=>{const it=r.items.find(i=>i.id===el.dataset.id),sx=e.clientX,sy=e.clientY,ox=it.x,oy=it.y;let mv=false;el.setPointerCapture(e.pointerId);
-el.onpointermove=ev=>{const dx=(ev.clientX-sx)/sc,dy=(ev.clientY-sy)/sc;if(Math.abs(dx)+Math.abs(dy)>.2)mv=true;it.x=Math.max(0,Math.min(r.w-it.w,Math.round((ox+dx)*2)/2));it.y=Math.max(0,Math.min(r.h-it.h,Math.round((oy+dy)*2)/2));el.style.left=it.x*sc+'px';el.style.top=it.y*sc+'px'};
-el.onpointerup=()=>{el.onpointermove=null;if(!mv)selI=selI===it.id?null:it.id;save();renderY()}}})}
-function addItem(){const r=RM(),p=(PRE[r.id]||PRE.shop)[preSel.value];const it={id:Math.random().toString(36).slice(2),name:p[0],x:0,y:0,w:Math.min(p[1],r.w),h:Math.min(p[2],r.h)};r.items.push(it);selI=it.id;save();renderY()}
-function rotI(){const r=RM(),i=r.items.find(x=>x.id===selI);[i.w,i.h]=[i.h,i.w];i.x=Math.max(0,Math.min(r.w-i.w,i.x));i.y=Math.max(0,Math.min(r.h-i.h,i.y));save();renderY()}
+roomSz.textContent=`${r.name}: ${fq(r.w)} × ${fq(r.h)} ft · each square = 1 ft · drag to move, tap to select, corner handle resizes`;rW.value=r.w;rH.value=r.h;
+r.items.forEach(i=>{if(i.a==null)i.a=0});drawPlan();selBar.innerHTML=selBarHTML();
+if(window.eW&&cur()){const up=()=>{const i=cur(),r=RM(),w=parseFloat(eW.value),h=parseFloat(eH.value),g=parseFloat(eA.value);const cx=i.x+i.w/2,cy=i.y+i.h/2;if(w>=.25)i.w=q4(w);if(h>=.25)i.h=q4(h);if(!isNaN(g))i.a=((Math.round(g)%360)+360)%360;i.x=cx-i.w/2;i.y=cy-i.h/2;clampI(i,r);save();drawPlan();syncBar()};eW.oninput=eH.oninput=eA.oninput=up;syncBar()}
+preSel.innerHTML=(PRE[r.id]||PRE.shop).map((p,k)=>`<option value="${k}">${esc(p[0])} (${p[1]}×${p[2]} ft)</option>`).join('')}
+function rotBy(d){const i=cur();i.a=(((i.a||0)+d)%360+360)%360;clampI(i,RM());save();drawPlan();syncBar()}
+function renI(){const i=cur(),n=prompt('Name',i.name);if(n&&n.trim()){i.name=n.trim();save();renderY()}}
+function addItem(){const r=RM(),p=(PRE[r.id]||PRE.shop)[preSel.value];const it={id:Math.random().toString(36).slice(2),name:p[0],x:0,y:0,w:Math.min(p[1],r.w),h:Math.min(p[2],r.h),a:0};r.items.push(it);selI=it.id;save();renderY()}
 function delI(){const r=RM();r.items=r.items.filter(x=>x.id!==selI);selI=null;save();renderY()}
-function setRoom(){const r=RM();r.w=Math.max(4,+rW.value||r.w);r.h=Math.max(4,+rH.value||r.h);r.items.forEach(i=>{i.x=Math.min(i.x,Math.max(0,r.w-i.w));i.y=Math.min(i.y,Math.max(0,r.h-i.h))});save();renderY()}
+function setRoom(){const r=RM();r.w=Math.max(4,+rW.value||r.w);r.h=Math.max(4,+rH.value||r.h);r.items.forEach(i=>clampI(i,r));save();renderY()}
 addEventListener('resize',()=>{if(!vY.hidden)renderY()});
 R();if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
 </script></body></html>
