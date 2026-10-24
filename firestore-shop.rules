@@ -1,0 +1,8 @@
+// Arpero Shop block for the arpero-shop Firestore rules (inside `match /databases/{database}/documents { ... }`).
+// Covers shops/{uid}/data/state, data/notify (push subscriptions + on/off + time) and data/pushstate.
+// Only Oscar's verified Google account, and only his own uid. The GitHub Actions sender uses the Admin SDK (bypasses rules).
+match /shops/{uid}/{doc=**} {
+  allow read, write: if request.auth != null && request.auth.uid == uid
+    && request.auth.token.email_verified == true
+    && request.auth.token.email.lower() == 'oskararpero@gmail.com';
+}

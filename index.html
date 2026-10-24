@@ -75,7 +75,7 @@ input,select,textarea{font-size:16px!important}
 <div class="card"><label>Add item<select id="preSel"></select></label><button class="p" style="width:100%;margin-top:6px" onclick="addItem()">＋ Add to room</button>
 <div class="qa" style="margin-top:8px"><label>Room width (ft)<input id="rW" type="number" step="0.5" onchange="setRoom()"></label><label>Room length (ft)<input id="rH" type="number" step="0.5" onchange="setRoom()"></label></div></div></div>
 <div id="vC" hidden><div id="calBox"><p style="padding:20px;color:#666">Sign in to see the shared calendar.</p></div></div><div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
-<h2>Sync</h2><div class="card" id="syncBox"></div>
+<h2>Notifications</h2><div class="card" id="notifBox"><div class="sub">Sign in to set up phone notifications.</div></div><h2>Sync</h2><div class="card" id="syncBox"></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
 <button class="fab p" onclick="edit()">＋ Project</button>
 <dialog id="dlg"><form method="dialog" id="f">
@@ -366,6 +366,32 @@ function setRoom(){const r=RM();r.w=Math.max(4,+rW.value||r.w);r.h=Math.max(4,+r
 addEventListener('resize',()=>{if(!vY.hidden)renderY()});
 R();syncUI();if(window.SYNC_MOCK)syncInit(SYNC_MOCK);if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js');
 </script>
+<script>
+// ---------- Shop phone notifications (Web Push, same VAPID key as Arpero Family; sent by the family repo's GitHub Action) ----------
+const VAPID='BM1fmtr7aoHRiyxaKfhLv7Hy4YvxPELGPlFfjV2v65_KxMagp9S1aKlMtluvEWnnxZrcAWjMEaBu3XD20eimUK0';
+const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const pushOK=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+const NT={cfg:{on:true,time:'07:30'},subId:localStorage.shopPushId||''};
+const b64u=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+async function hashId(t){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return 'p_'+[...new Uint8Array(h)].slice(0,10).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function nOn(){return pushOK()&&Notification.permission==='granted'&&NT.subId&&NT.cfg.subs&&NT.cfg.subs[NT.subId]}
+function renderNotif(){const b=document.getElementById('notifBox');if(!b)return;if(!window.shopNotify){b.innerHTML='<div class="sub">Sign in to set up phone notifications.</div>';return}
+ b.innerHTML=(nOn()?`<div style="display:flex;gap:8px;align-items:center"><div style="flex:1">🔔 On for this phone</div><button style="min-height:48px" onclick="pushOffShop()">Turn off</button></div>`:`<button class="p" style="width:100%;min-height:52px;font-size:17px" onclick="pushOnShop()">🔔 Allow notifications</button>`)+
+ `<div class="sub" style="margin:12px 0 6px">Due dates, overdue projects and a short morning summary. Only on Oscar's phones.</div>
+ <div style="display:flex;gap:8px"><select id="ntOn" style="flex:1;min-height:48px"><option value="1" ${NT.cfg.on!==false?'selected':''}>On</option><option value="0" ${NT.cfg.on===false?'selected':''}>Off</option></select><input id="ntTime" type="time" value="${NT.cfg.time||'07:30'}" style="flex:1;min-height:48px;font-size:16px"><button style="min-height:48px" onclick="saveNotif()">Save</button></div>`}
+function iosHelp(){const d=document.createElement('dialog');d.innerHTML=`<h2>🔔 One quick step first</h2><p>iPhone only allows notifications for apps on your Home Screen.</p><ol style="font-size:17px;line-height:1.7;padding-left:22px"><li>Open this page in <b>Safari</b></li><li>Tap <b>Share</b> ⬆︎ at the bottom</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b></li><li>Open <b>Arpero Shop</b> from your Home Screen and tap <b>Allow notifications</b> again</li></ol><p class="sub">Needs iOS 16.4 or newer.</p><button class="p" style="width:100%;min-height:52px">OK</button>`;d.querySelector('button').onclick=()=>{d.close();d.remove()};document.body.appendChild(d);d.showModal()}
+async function pushOnShop(){if(isIOS&&!standalone())return iosHelp();if(!pushOK())return alert('This browser can\'t do notifications. On iPhone, add the app to your Home Screen first (iOS 16.4+).');
+ if(await Notification.requestPermission()!=='granted')return alert('Notifications are off. Turn them on in Settings → Notifications → Arpero Shop.');
+ try{const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID)});
+  const j=JSON.parse(JSON.stringify(sub)),id=await hashId(j.endpoint);NT.subId=localStorage.shopPushId=id;await shopNotify.save({subs:{[id]:{sub:j,ua:navigator.userAgent.slice(0,120),at:Date.now()}}});alert('Notifications are on 👍')}catch(e){alert('Couldn\'t turn on notifications: '+e.message)}}
+async function pushOffShop(){if(!confirm('Turn off notifications on this phone?'))return;try{const r=await navigator.serviceWorker.ready,s=await r.pushManager.getSubscription();if(s)await s.unsubscribe()}catch(e){}if(NT.subId)await shopNotify.drop(NT.subId);NT.subId='';delete localStorage.shopPushId}
+function saveNotif(){shopNotify.save({on:document.getElementById('ntOn').value==='1',time:document.getElementById('ntTime').value||'07:30'}).then(()=>alert('Saved'))}
+// deep links from notification taps: ?go=p:<projectId> | ?go=cal
+function shopGo(g){if(!g)return;if(g==='cal')return tab('c');if(g.startsWith('p:')){tab('p');const id=g.slice(2);setTimeout(()=>{if(S.projects.find(x=>x.id==id))edit(id)},300)}}
+addEventListener('load',()=>{shopGo(new URLSearchParams(location.search).get('go'));if(location.search)history.replaceState(null,'',location.pathname)});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>e.data&&e.data.go&&shopGo(e.data.go));
+</script>
 <script type="module">
 if(!window.SYNC_MOCK){try{
 const V='https://www.gstatic.com/firebasejs/11.10.0/';
@@ -377,7 +403,8 @@ const prov=()=>{const p=new A.GoogleAuthProvider();p.setCustomParameters({prompt
 // Popup first (works on iOS Safari and home-screen apps, where redirect breaks due to storage partitioning); redirect only if popups are blocked/unsupported.
 const signIn=async()=>{try{await A.signInWithPopup(auth,prov())}catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code))return A.signInWithRedirect(auth,prov());throw e}};
 A.getRedirectResult(auth).catch(e=>syncErr(e));
-syncInit({onAuth:cb=>A.onAuthStateChanged(auth,u=>{cb(u);if(u&&!window.calApi)import('./cal.js?v=12').then(m=>{window.calApi=m.initCal({db,F,me:'oscar',el:document.getElementById('calBox'),app:'shop',names:{oscar:'Oscar',wife:'Kerissa'}});const sync=()=>{try{calApi.syncShop((S.projects||[]).filter(p=>p.due&&!p.done).map(p=>({id:String(p.id),title:p.name,date:p.due})))}catch(e){}};sync();const oR=window.R;let tm;window.R=function(){const r=oR.apply(this,arguments);clearTimeout(tm);tm=setTimeout(sync,3000);return r}}).catch(e=>console.warn('cal',e))}),signIn,signOut:()=>A.signOut(auth),
+syncInit({onAuth:cb=>A.onAuthStateChanged(auth,u=>{cb(u);if(u){const nref=F.doc(db,'shops',u.uid,'data','notify');window.shopNotify={save:o=>F.setDoc(nref,o,{merge:true}),drop:id=>F.setDoc(nref,{subs:{[id]:F.deleteField()}},{merge:true})};F.onSnapshot(nref,s=>{NT.cfg=s.exists()?s.data():{on:true,time:'07:30'};if(NT.subId&&!(NT.cfg.subs||{})[NT.subId]&&Notification.permission==='granted'){/* re-save if lost */}renderNotif()},()=>{});renderNotif();
+ if(pushOK()&&Notification.permission==='granted')navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(async sub=>{if(!sub)return;const j=JSON.parse(JSON.stringify(sub)),id=await hashId(j.endpoint);NT.subId=localStorage.shopPushId=id;shopNotify.save({subs:{[id]:{sub:j,ua:navigator.userAgent.slice(0,120),at:Date.now()}}})}).catch(()=>{})}else{window.shopNotify=null;renderNotif()}if(u&&!window.calApi)import('./cal.js?v=12').then(m=>{window.calApi=m.initCal({db,F,me:'oscar',el:document.getElementById('calBox'),app:'shop',names:{oscar:'Oscar',wife:'Kerissa'}});const sync=()=>{try{calApi.syncShop((S.projects||[]).filter(p=>p.due&&!p.done).map(p=>({id:String(p.id),title:p.name,date:p.due})))}catch(e){}};sync();const oR=window.R;let tm;window.R=function(){const r=oR.apply(this,arguments);clearTimeout(tm);tm=setTimeout(sync,3000);return r}}).catch(e=>console.warn('cal',e))}),signIn,signOut:()=>A.signOut(auth),
 get:async uid=>{const s=await F.getDoc(ref(uid));return s.exists()?s.data():null},set:(uid,d)=>F.setDoc(ref(uid),d),
 listen:(uid,cb)=>F.onSnapshot(ref(uid),s=>{if(s.exists()&&!s.metadata.hasPendingWrites)cb(s.data())})});
 }catch(e){window.syncErr&&syncErr(e)}}
