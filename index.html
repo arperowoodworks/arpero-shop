@@ -49,10 +49,16 @@ input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-
 .qc{background:#fff;color:#111;border:2px solid #111;border-radius:14px;padding:18px;font-size:15px}.qc .hd{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:10px}.qc img{height:46px}.qc table{width:100%;border-collapse:collapse}.qc td{padding:5px 0;border-bottom:1px solid #ddd;vertical-align:top}.qc td.r{text-align:right;white-space:nowrap;padding-left:8px}.qc .tt td{border:0;padding:2px 0}.qc .big td{font-weight:800;font-size:18px;border-top:2px solid #111;padding-top:6px}.qc .ft{margin-top:12px;font-size:13px;color:#444;text-align:center}
 .ql{display:flex;gap:6px;align-items:center;margin:6px 0}.ql input,.ql select{font-size:16px;padding:8px;border:1px solid #111;border-radius:10px;background:#f5f5f5;min-width:0}.ql .q{flex:0 0 58px}.ql .pr{flex:0 0 86px}.ql .gr{flex:1}.int{border:2px dashed #111;border-radius:10px;padding:8px;margin-top:8px;font-size:14px}.qst{font-size:12px;font-weight:800;padding:2px 8px;border-radius:20px;border:1px solid #111}.qst.Accepted{background:#111;color:#fff}.qst.Declined{color:#c00;border-color:#c00}.qst.Sent{background:#eee}
 #qdlg,#vdlg{max-height:92vh;overflow:auto}
+</style><style>/* phone-first bottom tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0!important;background:#fff;border-top:1px solid #ddd;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px}
+.tabs button{min-height:48px;font-size:13px!important;border-radius:10px}
+body{padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}
+.fab{bottom:calc(76px + env(safe-area-inset-bottom))!important}
+input,select,textarea{font-size:16px!important}
 </style></head><body>
 <header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1><span id="syPill" class="qst" style="margin-left:auto" onclick="syncBox.scrollIntoView({behavior:'smooth'})">Signed out</span></header>
 <div class="hud" id="hud"></div><div class="tot" id="totEl"></div><div class="focus" id="focusEl"></div>
-<div class="tabs"><button id="tP" class="on" onclick="tab('p')">Projects</button><button id="tL" onclick="tab('l')">Log</button><button id="tM" onclick="tab('m')">Stock<span id="mCnt"></span></button><button id="tY" onclick="tab('y')">Layout</button><button id="tQ" onclick="tab('q')">Quotes</button></div>
+<div class="tabs"><button id="tP" class="on" onclick="tab('p')">Projects</button><button id="tL" onclick="tab('l')">Log</button><button id="tM" onclick="tab('m')">Stock<span id="mCnt"></span></button><button id="tY" onclick="tab('y')">Layout</button><button id="tQ" onclick="tab('q')">Quotes</button><button id="tC" onclick="tab('c')">Calendar</button></div>
 <div id="vP"><h2>Projects</h2><div id="active"></div>
 <details id="fin"><summary>Finished</summary><div id="done"></div></details>
 <h2>Made to order (Shop)</h2><div id="shop"></div></div>
@@ -68,7 +74,7 @@ input,select,textarea{font-size:16px!important;max-width:100%;box-sizing:border-
 <div class="plan" id="plan"></div><div class="row" id="selBar" style="margin-top:8px"></div>
 <div class="card"><label>Add item<select id="preSel"></select></label><button class="p" style="width:100%;margin-top:6px" onclick="addItem()">＋ Add to room</button>
 <div class="qa" style="margin-top:8px"><label>Room width (ft)<input id="rW" type="number" step="0.5" onchange="setRoom()"></label><label>Room length (ft)<input id="rH" type="number" step="0.5" onchange="setRoom()"></label></div></div></div>
-<div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
+<div id="vC" hidden><div id="calBox"><p style="padding:20px;color:#666">Sign in to see the shared calendar.</p></div></div><div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
 <h2>Sync</h2><div class="card" id="syncBox"></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
 <button class="fab p" onclick="edit()">＋ Project</button>
@@ -182,7 +188,7 @@ function renderLog(){const L=(S.log||[]).slice().sort((a,b)=>a.date<b.date?-1:1)
 const E=L.filter(x=>x.type==='exp'),I=L.filter(x=>x.type==='inc'),te=E.reduce((a,x)=>a+x.amount,0),ti=I.reduce((a,x)=>a+x.amount,0);
 lExp.innerHTML=(E.map(row).join('')||'<div class="sub">None yet</div>')+`<div class="lsum">= ${$$(te)}</div>`;lInc.innerHTML=(I.map(row).join('')||'<div class="sub">None yet</div>')+`<div class="lsum">= ${$$(ti)}</div>`;
 lNet.innerHTML=`<div class="top"><span>Log net (income − expenses)</span><b class="${ti-te<0?'neg':'pos'}">${$$(ti-te)}</b></div><div class="sub">Log entries are extra money not tied to a project. Project payments and costs are counted separately in the summary.</div>`;if(!lDate.value)lDate.value=TODAY();return{te,ti}}
-function tab(t){vP.hidden=t!=='p';vL.hidden=t!=='l';vM.hidden=t!=='m';tP.classList.toggle('on',t==='p');tL.classList.toggle('on',t==='l');tM.classList.toggle('on',t==='m');vY.hidden=t!=='y';tY.classList.toggle('on',t==='y');vQ.hidden=t!=='q';tQ.classList.toggle('on',t==='q');document.querySelector('.fab').hidden=t==='m'||t==='y'||t==='q';if(t==='q')renderQ();if(t==='y')renderY()}
+function tab(t){vP.hidden=t!=='p';vL.hidden=t!=='l';vM.hidden=t!=='m';tP.classList.toggle('on',t==='p');tL.classList.toggle('on',t==='l');tM.classList.toggle('on',t==='m');vY.hidden=t!=='y';tY.classList.toggle('on',t==='y');vQ.hidden=t!=='q';tQ.classList.toggle('on',t==='q');vC.hidden=t!=='c';tC.classList.toggle('on',t==='c');document.querySelector('.fab').hidden=t==='m'||t==='y'||t==='q'||t==='c';if(t==='c'&&window.calApi)calApi.render();if(t==='q')renderQ();if(t==='y')renderY()}
 // ---- Money (structure: p.price number, p.costs [{name,amount}]) ----
 const COST_PRESETS=['Wood','Epoxy','Finish','Hardware','Shipping','Fees'];
 const $$=n=>'$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -371,7 +377,7 @@ const prov=()=>{const p=new A.GoogleAuthProvider();p.setCustomParameters({prompt
 // Popup first (works on iOS Safari and home-screen apps, where redirect breaks due to storage partitioning); redirect only if popups are blocked/unsupported.
 const signIn=async()=>{try{await A.signInWithPopup(auth,prov())}catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code))return A.signInWithRedirect(auth,prov());throw e}};
 A.getRedirectResult(auth).catch(e=>syncErr(e));
-syncInit({onAuth:cb=>A.onAuthStateChanged(auth,cb),signIn,signOut:()=>A.signOut(auth),
+syncInit({onAuth:cb=>A.onAuthStateChanged(auth,u=>{cb(u);if(u&&!window.calApi)import('./cal.js?v=12').then(m=>{window.calApi=m.initCal({db,F,me:'oscar',el:document.getElementById('calBox'),app:'shop',names:{oscar:'Oscar',wife:'Kerissa'}});const sync=()=>{try{calApi.syncShop((S.projects||[]).filter(p=>p.due&&!p.done).map(p=>({id:String(p.id),title:p.name,date:p.due})))}catch(e){}};sync();const oR=window.R;let tm;window.R=function(){const r=oR.apply(this,arguments);clearTimeout(tm);tm=setTimeout(sync,3000);return r}}).catch(e=>console.warn('cal',e))}),signIn,signOut:()=>A.signOut(auth),
 get:async uid=>{const s=await F.getDoc(ref(uid));return s.exists()?s.data():null},set:(uid,d)=>F.setDoc(ref(uid),d),
 listen:(uid,cb)=>F.onSnapshot(ref(uid),s=>{if(s.exists()&&!s.metadata.hasPendingWrites)cb(s.data())})});
 }catch(e){window.syncErr&&syncErr(e)}}
