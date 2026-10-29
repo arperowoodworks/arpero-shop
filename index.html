@@ -98,7 +98,7 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 </style></head><body>
 <header style="display:flex;align-items:center;gap:12px;margin:14px 0 6px"><img src="logo.png?v=2" alt="Arpero Woodworks" style="height:56px;background:#fff;border-radius:10px;padding:4px 8px"><h1 style="margin:0">Arpero Shop</h1><span id="syPill" class="qst" style="margin-left:auto" onclick="syncBox.scrollIntoView({behavior:'smooth'})">Signed out</span></header>
 <div class="hud" id="hud"></div><div class="tot" id="totEl"></div><div class="focus" id="focusEl"></div>
-<nav class="tabs" id="tabbar"><button id="tP" class="on" onclick="tab('p')"><svg class="tic" viewBox="0 0 24 24"><path d="M14.5 4.5 19.5 9.5 10 19H5v-5z"/><path d="m12.5 6.5 5 5"/></svg><span>Projects</span></button><button id="tL" onclick="tab('l')"><svg class="tic" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>Log</span></button><button id="tM" onclick="tab('m')"><svg class="tic" viewBox="0 0 24 24"><path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/></svg><span>Stock</span><span id="mCnt"></span></button><button id="tY" onclick="tab('y')"><svg class="tic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span>Layout</span></button><button id="tQ" onclick="tab('q')"><svg class="tic" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14.5 3v4.5H19M9.5 12h6M9.5 16h6"/></svg><span>Quotes</span></button><button id="tC" onclick="tab('c')"><svg class="tic" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button></nav>
+<nav class="tabs" id="tabbar"><button id="tP" class="on" onclick="tab('p')"><svg class="tic" viewBox="0 0 24 24"><path d="M14.5 4.5 19.5 9.5 10 19H5v-5z"/><path d="m12.5 6.5 5 5"/></svg><span>Projects</span></button><button id="tL" onclick="tab('l')"><svg class="tic" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>Log</span></button><button id="tM" onclick="tab('m')"><svg class="tic" viewBox="0 0 24 24"><path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/></svg><span>Stock</span><span id="mCnt"></span></button><button id="tY" onclick="tab('y')"><svg class="tic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span>Layout</span></button><button id="tQ" onclick="tab('q')"><svg class="tic" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14.5 3v4.5H19M9.5 12h6M9.5 16h6"/></svg><span>Quotes</span></button><button id="tS" onclick="tab('s')"><svg class="tic" viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span>Ship</span></button><button id="tC" onclick="tab('c')"><svg class="tic" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Calendar</span></button></nav>
 <div id="vP"><h2>Projects</h2><div id="active"></div>
 <details id="fin"><summary>Finished</summary><div id="done"></div></details>
 <h2>Made to order (Shop)</h2><div id="shop"></div></div>
@@ -114,6 +114,28 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 <div class="plan" id="plan"></div><div class="row" id="selBar" style="margin-top:8px"></div>
 <div class="card"><label>Add item<select id="preSel"></select></label><button class="p" style="width:100%;margin-top:6px" onclick="addItem()">＋ Add to room</button>
 <div class="qa" style="margin-top:8px"><label>Room width (ft)<input id="rW" type="number" step="0.5" onchange="setRoom()"></label><label>Room length (ft)<input id="rH" type="number" step="0.5" onchange="setRoom()"></label></div></div></div>
+<div id="vS" hidden><h2>Shipping</h2>
+<div class="card"><h3>New shipment</h3>
+<div class="qa"><label style="grid-column:1/3">Buyer name<input id="sName"></label>
+<label style="grid-column:1/3">Address line 1<input id="sA1" autocomplete="off"></label>
+<label style="grid-column:1/3">Address line 2<input id="sA2" placeholder="Apt, suite (optional)"></label>
+<label style="grid-column:1/3">City<input id="sCity"></label>
+<label>State<input id="sState" maxlength="2" style="text-transform:uppercase"></label><label>ZIP<input id="sZip" inputmode="numeric"></label>
+<label>Phone<input id="sPhone" type="tel" placeholder="optional"></label><label>Email<input id="sEmail" type="email" placeholder="optional"></label>
+<label>Source<select id="sSrc"><option>Squarespace</option><option>Etsy</option><option>Facebook</option><option>Other</option></select></label><label>Order #<input id="sOrd"></label>
+<label style="grid-column:1/3">Item<input id="sItem"></label>
+<label style="grid-column:1/3">Package<select id="sPre" onchange="shipPre()"></select></label>
+<label>L in<input id="sL" type="number" step="0.1" inputmode="decimal"></label><label>W in<input id="sW" type="number" step="0.1" inputmode="decimal"></label>
+<label>H in<input id="sH" type="number" step="0.1" inputmode="decimal"></label><label>Weight<span style="display:flex;gap:4px"><input id="sLb" type="number" inputmode="numeric" placeholder="lb"><input id="sOz" type="number" step="0.1" inputmode="decimal" placeholder="oz"></span></label></div>
+<div class="row"><button style="flex:1" onclick="savePre()">Save as preset</button><button style="flex:1" onclick="delPre()">Delete preset</button></div>
+<div class="row"><button class="p" style="flex:1" onclick="saveShip()">Save shipment</button><button style="flex:1" onclick="clearShip()">Clear</button></div></div>
+<div class="card"><h3>Copy into Pirate Ship</h3><div id="sCopy"></div>
+<button class="p" style="width:100%;margin-top:8px" onclick="cpAddr()">Copy full address</button>
+<div class="row"><a class="btnl p" style="flex:1" href="https://ship.pirateship.com/" target="_blank" rel="noopener">Open Pirate Ship</a><a class="btnl" style="flex:1" href="https://cnsb.usps.com/" target="_blank" rel="noopener">USPS Click-N-Ship</a></div>
+<div class="sub" style="margin-top:8px">Tip: after you buy the label, open the 4x6 PDF and tap Share &gt; MUNBYN to print it.</div></div>
+<h2>Waiting to ship</h2><div id="sPend"></div>
+<h2>Shipped log</h2><input id="sQ" placeholder="Search name, order #, item, tracking" oninput="renderShip()"><div id="sLog"></div>
+<div id="sToast" class="stoast" hidden></div></div>
 <div id="vC" hidden><div id="calBox"><p style="padding:20px;color:#666">Sign in to see the shared calendar.</p></div></div><div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
 <h2>Notifications</h2><div class="card" id="notifBox"><div class="sub">Sign in to set up phone notifications.</div></div><h2>Sync</h2><div class="card" id="syncBox"></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
@@ -448,4 +470,47 @@ syncInit({onAuth:cb=>A.onAuthStateChanged(auth,u=>{cb(u);if(u){const nref=F.doc(
 get:async uid=>{const s=await F.getDoc(ref(uid));return s.exists()?s.data():null},set:(uid,d)=>F.setDoc(ref(uid),d),
 listen:(uid,cb)=>F.onSnapshot(ref(uid),s=>{if(s.exists()&&!s.metadata.hasPendingWrites)cb(s.data())})});
 }catch(e){window.syncErr&&syncErr(e)}}
-</script></body></html>
+</script><style>.btnl{display:block;text-align:center;text-decoration:none;padding:12px;border-radius:10px;border:1px solid #111;background:#f5f5f5;color:#111;font-size:16px}.btnl.p{background:#0f2d52;color:#fff}
+.cpr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ddd}.cpr span{min-width:0;overflow-wrap:anywhere}.cpr small{display:block;color:#888;font-size:12px}.cpr button{flex:0 0 auto;min-height:36px;padding:4px 12px}
+.sh{padding:8px 0;border-bottom:1px solid #ddd}.sh .row button{padding:6px 10px}.stoast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#111;color:#fff;padding:8px 16px;border-radius:20px;z-index:99}
+#vS label{display:block;font-size:13px}#vS input,#vS select{width:100%;box-sizing:border-box}#sQ{margin:6px 0}</style>
+<script>
+// ---- Shipping (separate key; not cloud-synced so buyer addresses stay on this phone) ----
+const SK='arperoShip1';let SH;try{SH=JSON.parse(localStorage.getItem(SK))}catch(e){}
+if(!SH)SH={presets:[{name:'Small box 8x6x4',l:8,w:6,h:4,lb:1,oz:0}],ships:[]};
+const shSave=()=>localStorage.setItem(SK,JSON.stringify(SH));
+const SF=['Name','A1','A2','City','State','Zip','Phone','Email','Src','Ord','Item','L','W','H','Lb','Oz'];
+const sv=f=>document.getElementById('s'+f);let shEdit=null;
+const shEsc=t=>String(t??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+function toast(m){sToast.textContent=m;sToast.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>sToast.hidden=true,1400)}
+async function cp(t){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}toast('Copied')}
+function draft(){const d={};SF.forEach(f=>d[f]=sv(f).value.trim());d.State=d.State.toUpperCase();return d}
+function addrText(d){return [d.Name,d.A1,d.A2,`${d.City}, ${d.State} ${d.Zip}`].filter(x=>x&&x.trim()!==',').join('\n')}
+function wt(d){return (d.Lb||0)+' lb '+(d.Oz||0)+' oz'}
+function renderCopy(){const d=draft();const rows=[['Name',d.Name],['Address 1',d.A1],['Address 2',d.A2],['City',d.City],['State',d.State],['ZIP',d.Zip],['Phone',d.Phone],['Email',d.Email],['Dimensions',d.L||d.W||d.H?`${d.L} x ${d.W} x ${d.H} in`:''],['Weight lb',d.Lb],['Weight oz',d.Oz]];
+sCopy.innerHTML=rows.filter(r=>r[1]).map((r,i)=>`<div class="cpr"><span><small>${r[0]}</small>${shEsc(r[1])}</span><button data-v="${shEsc(r[1])}" onclick="cp(this.dataset.v)">Copy</button></div>`).join('')||'<div class="sub">Fill in the form to get copy buttons.</div>';
+localStorage.setItem(SK+'d',JSON.stringify(d))}
+function cpAddr(){const d=draft();if(!d.Name&&!d.A1)return toast('No address yet');cp(addrText(d))}
+function renderPre(){sPre.innerHTML='<option value="">Custom size</option>'+SH.presets.map((p,i)=>`<option value="${i}">${shEsc(p.name)} (${p.lb} lb ${p.oz} oz)</option>`).join('')}
+function shipPre(){const p=SH.presets[sPre.value];if(!p)return;sL.value=p.l;sW.value=p.w;sH.value=p.h;sLb.value=p.lb;sOz.value=p.oz;renderCopy()}
+function savePre(){const n=prompt('Preset name (e.g. Coaster box)');if(!n)return;SH.presets.push({name:n.trim(),l:+sL.value||0,w:+sW.value||0,h:+sH.value||0,lb:+sLb.value||0,oz:+sOz.value||0});shSave();renderPre();sPre.value=SH.presets.length-1;toast('Preset saved')}
+function delPre(){const p=SH.presets[sPre.value];if(!p)return toast('Pick a preset first');if(!confirm('Delete preset "'+p.name+'"?'))return;SH.presets.splice(sPre.value,1);shSave();renderPre()}
+function clearShip(){SF.forEach(f=>{if(f!=='Src')sv(f).value=''});sSrc.value='Squarespace';sPre.value='';shEdit=null;renderCopy()}
+function saveShip(){const d=draft();if(!d.Name||!d.A1||!d.Zip)return alert('Add at least name, address line 1 and ZIP.');
+if(shEdit){Object.assign(SH.ships.find(x=>x.id===shEdit),{d})}else SH.ships.unshift({id:Date.now().toString(36),created:Date.now(),d,shipped:false});
+shSave();clearShip();renderShip();toast('Shipment saved')}
+function loadShip(id){const x=SH.ships.find(s=>s.id===id);SF.forEach(f=>sv(f).value=x.d[f]||'');shEdit=id;renderCopy();window.scrollTo(0,0)}
+function markShip(id){const x=SH.ships.find(s=>s.id===id);const g=k=>document.getElementById(k+id).value.trim();
+x.tracking=g('tr');x.carrier=g('ca');x.cost=parseFloat(g('co'))||0;if(!x.tracking&&!confirm('No tracking number. Mark shipped anyway?'))return;x.shipped=true;x.shippedAt=Date.now();shSave();renderShip();toast('Marked shipped')}
+function delShip(id){const x=SH.ships.find(s=>s.id===id);if(!confirm('Delete shipment for '+x.d.Name+'? This cannot be undone.'))return;SH.ships=SH.ships.filter(s=>s.id!==id);shSave();renderShip()}
+function head(x){return `<b>${shEsc(x.d.Name)}</b> · ${shEsc(x.d.Src)}${x.d.Ord?' #'+shEsc(x.d.Ord):''}<div class="sub">${shEsc(x.d.Item)} · ${shEsc(x.d.City)}, ${shEsc(x.d.State)} ${shEsc(x.d.Zip)} · ${wt(x.d)}</div>`}
+function renderShip(){const P=SH.ships.filter(x=>!x.shipped);
+sPend.innerHTML=P.map(x=>`<div class="card sh">${head(x)}<div class="qa" style="margin-top:6px"><input id="tr${x.id}" placeholder="Tracking #" value="${shEsc(x.tracking)}" style="grid-column:1/3"><input id="ca${x.id}" placeholder="Carrier / service" value="${shEsc(x.carrier||'USPS Ground Advantage')}"><input id="co${x.id}" type="number" step="0.01" inputmode="decimal" placeholder="Cost $" value="${x.cost||''}"></div>
+<div class="row"><button style="flex:1" onclick="loadShip('${x.id}')">Copy fields</button><button class="p" style="flex:1" onclick="markShip('${x.id}')">Mark shipped</button><button onclick="delShip('${x.id}')">Delete</button></div></div>`).join('')||'<div class="sub">Nothing waiting.</div>';
+const q=(sQ.value||'').toLowerCase(),L=SH.ships.filter(x=>x.shipped&&(!q||JSON.stringify([x.d,x.tracking,x.carrier]).toLowerCase().includes(q)));
+sLog.innerHTML=L.map(x=>`<div class="sh">${head(x)}<div class="sub">${new Date(x.shippedAt).toLocaleDateString()} · ${shEsc(x.carrier)} · ${x.cost?$$(x.cost):''}</div>${x.tracking?`<div class="row"><span style="flex:1;overflow-wrap:anywhere">${shEsc(x.tracking)}</span><button data-v="${shEsc(x.tracking)}" onclick="cp(this.dataset.v)">Copy</button></div>`:''}<div class="row"><button onclick="delShip('${x.id}')">Delete</button></div></div>`).join('')||'<div class="sub">'+(q?'No matches.':'No shipped orders yet.')+'</div>'}
+(function(){renderPre();try{const d=JSON.parse(localStorage.getItem(SK+'d'));if(d)SF.forEach(f=>{if(d[f]!=null)sv(f).value=d[f]})}catch(e){}
+SF.forEach(f=>sv(f).addEventListener('input',renderCopy));sSrc.addEventListener('change',renderCopy);renderCopy();renderShip();
+const ot=tab;tab=function(t){vS.hidden=t!=='s';tS.classList.toggle('on',t==='s');ot(t);if(t==='s')document.querySelector('.fab').hidden=true};})();
+</script>
+</body></html>
