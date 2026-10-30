@@ -366,7 +366,7 @@ window.LAST_MAILTO=u;location.href=u;if(q.status==='Draft')q.status='Sent';save(
 // ---- Invoices (built on the fly from a quote or project; number + date saved on the source as inv:{num,date}) ----
 // Business rule: no deposits — full payment up front. Status is Paid in full or Due (full amount).
 let vi=null;
-function invNum(o){if(!o.inv){S.invSeq=Math.max(S.invSeq||2000,...S.quotes.map(q=>q.inv?q.inv.num:0),...S.projects.map(p=>p.inv?p.inv.num:0))+1;o.inv={num:S.invSeq,date:TODAY()};save()}return o.inv}
+function invNum(o){if(!o.inv){S.invSeq=Math.max(S.invSeq||100,...S.quotes.map(q=>q.inv?q.inv.num:0),...S.projects.map(p=>p.inv?p.inv.num:0))+1;o.inv={num:S.invSeq,date:TODAY()};save()}return o.inv}
 function invQ(id){const q=S.quotes.find(x=>x.id===id),c=qCalc(q),pj=q.projectId&&S.projects.find(x=>x.id===q.projectId),iv=invNum(q);
 const lines=[...q.items.map(i=>({desc:lineNm(i),qty:i.qty,price:i.price})),...q.custom.map(x=>({desc:x.desc,qty:1,price:+x.price||0}))];
 const paid=q.invPaid!=null?q.invPaid:!!(pj&&+pj.paid>=c.total-0.005&&c.total>0);
