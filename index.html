@@ -85,6 +85,8 @@ select option{color:#111;background:#fff}
 .st.pd,.qst.Accepted{background:rgba(60,160,110,.5)!important}.st.np,.qst.Declined,.red,.short,.neg{color:#ff9a8a!important}.st.np{border-color:#ff9a8a!important}.pos,.ok{color:#9fe8b0!important}
 .le,.mi{border-bottom:1px solid rgba(255,255,255,.15)!important}.lsum{border-top:1px solid rgba(255,255,255,.4)!important}
 .qc,.qc *{color:#111}.qc{background:#fff!important} /* quote stays print-white for sharing */
+.qc .ist{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px;border:2px solid #111}.qc .ist.pd{background:#d9f2e1!important;border-color:#2e8b57;color:#1d5e3a!important}.qc .ist.du{background:#fde2dd!important;border-color:#c0392b;color:#8e2a1f!important}.qc th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#555!important;border-bottom:2px solid #111;padding:4px 0}.qc th.r,.qc td.c{text-align:right}.qc th.r,.qc td.r{padding-left:10px}.qc .sub,.qc .ft{color:#555!important}
+@media print{body *{visibility:hidden!important}#ivEl,#ivEl *{visibility:visible!important}#ivEl{position:fixed;left:0;top:0;width:100%;border:none}dialog#idlg{position:static;border:none;box-shadow:none;background:#fff}}
 .plan{border:1px solid rgba(255,255,255,.4)!important;border-radius:14px}
 .fab{background:rgba(201,138,60,.9)!important;color:#1e120a!important}
 nav.tabs{left:12px!important;right:12px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;border-radius:26px;background:rgba(30,20,12,.82)!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:6px 4px!important}
@@ -136,7 +138,7 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 <h2>Waiting to ship</h2><div id="sPend"></div>
 <h2>Shipped log</h2><input id="sQ" placeholder="Search name, order #, item, tracking" oninput="renderShip()"><div id="sLog"></div>
 <div id="sToast" class="stoast" hidden></div></div>
-<div id="vC" hidden><div id="calBox"><p style="padding:20px;color:#666">Sign in to see the shared calendar.</p></div></div><div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><div id="qList"></div></div>
+<div id="vC" hidden><div id="calBox"><p style="padding:20px;color:#666">Sign in to see the shared calendar.</p></div></div><div id="vQ" hidden><h2>Quotes</h2><button class="p" style="width:100%" onclick="editQ()">＋ New quote</button><button style="width:100%;margin-top:8px" onclick="pickClient()">🧾 Invoice a client</button><div id="qList"></div></div>
 <h2>Notifications</h2><div class="card" id="notifBox"><div class="sub">Sign in to set up phone notifications.</div></div><h2>Sync</h2><div class="card" id="syncBox"></div>
 <h2>Backup</h2><div class="row"><button onclick="exp()">Export JSON</button><button onclick="imp.click()">Import JSON</button><input type="file" id="imp" accept="application/json" hidden></div>
 <button class="fab p" onclick="edit()">＋ Project</button>
@@ -181,6 +183,8 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 <label>Other est. cost ($)<input id="qXc" type="number" step="0.01" inputmode="decimal" placeholder="0"></label><div id="qInt"></div></div>
 <div id="qTot" class="sub" style="font-size:15px;margin-top:8px"></div>
 <div class="row"><button class="p" value="save">Save</button><button value="cancel" formnovalidate>Cancel</button></div></form></dialog>
+<dialog id="cdlgI"><h2>Invoice a client</h2><div class="sub">Gathers every project and quote for this customer into one invoice.</div><label>Client<select id="cliSel"></select></label><div class="row" style="margin-top:10px"><button class="p" onclick="cdlgI.close();invC(cliSel.value)">Make invoice</button><button onclick="cdlgI.close()">Cancel</button></div></dialog>
+<dialog id="idlg"><div id="iCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="shareI()">Share</button><button onclick="printI()">Print / Save PDF</button><button onclick="copyI()">Copy text</button><button onclick="toggleI()" id="iTog">Mark paid</button><button onclick="idlg.close()">Close</button></div></dialog>
 <dialog id="vdlg"><div id="qCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="shareQ()">Share</button><button onclick="emailQ()">Email quote</button><button onclick="copyQ()">Copy text</button><button onclick="vdlg.close()">Close</button></div></dialog>
 <dialog id="chdlg"><div class="name">Use cloud data or this device's data?</div><div class="sub" id="chInfo"></div>
 <div class="row" style="margin-top:10px"><button id="chCloud" onclick="chdlg.close('cloud')">Use cloud data</button><button id="chLocal" onclick="chdlg.close('local')">Use this device</button></div></dialog>
@@ -213,9 +217,9 @@ const idle=p.cat==='shop'&&p.pct===0;
 return `<div class="card"><div class="top"><div><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.customer)}${p.due?' · '+p.due:''}</div></div><div class="due ${red?'red':'ok'}">${idle?'Waiting for order':dt}</div></div>
 ${p.ship?`<span class="tag">📦 ${esc(p.ship)}</span>`:''}${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
 ${moneyHTML(p)}${payHTML(p)}${muHTML(p)}<div class="bar"><i style="width:${p.pct}%"></i><span>${p.pct}%</span></div>
-${p.done?`<div class="row"><button onclick="reopen('${p.id}')">Reopen</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">Delete</button></div>`:
+${p.done?`<div class="row"><button onclick="reopen('${p.id}')">Reopen</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="invP('${p.id}')">🧾 Invoice</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">Delete</button></div>`:
 `<input type="range" min="0" max="100" step="5" value="${p.pct}" onchange="setPct('${p.id}',this.value)">
-<div class="row"><button onclick="setPct('${p.id}',${p.pct-10})">−10%</button><button onclick="setPct('${p.id}',${p.pct+10})">+10%</button><button class="p" onclick="finish('${p.id}')">Done ✓</button><button onclick="edit('${p.id}')">Edit</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">🗑</button></div>`}</div>`}
+<div class="row"><button onclick="setPct('${p.id}',${p.pct-10})">−10%</button><button onclick="setPct('${p.id}',${p.pct+10})">+10%</button><button class="p" onclick="finish('${p.id}')">Done ✓</button><button onclick="edit('${p.id}')">Edit</button><button onclick="costs('${p.id}')">💲 Costs</button><button onclick="invP('${p.id}')">🧾 Invoice</button><button onclick="mats('${p.id}')">🪵 Materials</button><button class="d" onclick="del('${p.id}')">🗑</button></div>`}</div>`}
 const byDue=(a,b)=>(a.due||'9999')<(b.due||'9999')?-1:(a.due||'9999')>(b.due||'9999')?1:0;
 function R(){totals();const i=lvl(S.xp),cur=LV[i][0],nx=LV[i+1]?LV[i+1][0]:cur,pc=nx>cur?(S.xp-cur)/(nx-cur)*100:100;
 const live=S.streak&&(S.last===TODAY()||days(S.last)===-1)?S.streak:0;
@@ -340,7 +344,7 @@ qf.oninput=qf.onchange=qUp;
 qdlg.addEventListener('close',()=>{if(qdlg.returnValue!=='save')return;const q=qRead();if(!q.customer)return;if(qid)Object.assign(S.quotes.find(x=>x.id===qid),q);else{q.id=Math.random().toString(36).slice(2);q.num=(S.quotes.reduce((a,x)=>Math.max(a,x.num||0),1000))+1;q.date=TODAY();S.quotes.push(q)}save();renderQ();const qq=qid?S.quotes.find(x=>x.id===qid):q;if(qq.status==='Accepted'&&!qq.projectId)convQ(qq.id)});
 function renderQ(){qList.innerHTML=S.quotes.slice().reverse().map(q=>{const c=qCalc(q);return`<div class="card"><div class="top"><div><div class="name">#${q.num} · ${esc(q.customer)}</div><div class="sub">${fd(q.date)} · valid to ${fd(q.valid)}</div></div><span class="qst ${q.status}">${q.status}</span></div>
 <div class="money"><span>Total <b>${$$(c.total)}</b></span><span>Deposit <b>${$$(c.dep)}</b></span><span class="sub">Profit ${$$(c.profit)} (you only)</span></div>
-<div class="row"><button class="p" onclick="viewQ('${q.id}')">View / Share</button><button onclick="editQ('${q.id}')">Edit</button>${q.status==='Draft'||q.status==='Sent'?`<button onclick="acceptQ('${q.id}')">✓ Mark accepted</button>`:''}${q.projectId?'<span class="sub">✓ Project made</span>':q.status==='Accepted'?`<button onclick="convQ('${q.id}')">→ Project</button>`:''}<button class="d" onclick="delQ('${q.id}')">🗑</button></div></div>`}).join('')||'<div class="sub" style="margin-top:10px">No quotes yet. Tap ＋ New quote to price a job for a customer.</div>'}
+<div class="row"><button class="p" onclick="viewQ('${q.id}')">View / Share</button><button onclick="editQ('${q.id}')">Edit</button><button onclick="invQ('${q.id}')">🧾 Invoice</button>${q.status==='Draft'||q.status==='Sent'?`<button onclick="acceptQ('${q.id}')">✓ Mark accepted</button>`:''}${q.projectId?'<span class="sub">✓ Project made</span>':q.status==='Accepted'?`<button onclick="convQ('${q.id}')">→ Project</button>`:''}<button class="d" onclick="delQ('${q.id}')">🗑</button></div></div>`}).join('')||'<div class="sub" style="margin-top:10px">No quotes yet. Tap ＋ New quote to price a job for a customer.</div>'}
 function delQ(id){if(confirm('Delete this quote?')){S.quotes=S.quotes.filter(q=>q.id!==id);save();renderQ()}}
 let vq=null;const lineNm=i=>i.name.replace(' — ',' (')+(i.name.includes(' — ')?')':'');
 function viewQ(id){const q=vq=S.quotes.find(x=>x.id===id),c=qCalc(q);
@@ -358,6 +362,39 @@ function copyQ(){const t=qText(vq);(navigator.clipboard?navigator.clipboard.writ
 function emailQ(){const q=vq;let to=(q.contact||'').match(/[^\s,;<>]+@[^\s,;<>]+\.[a-z]{2,}/i);to=to?to[0]:prompt('Customer email address?','');if(!to)return;if(!/@/.test(q.contact||'')){q.contact=q.contact?q.contact+' · '+to:to}
 let body=qText(q,true);const sub=encodeURIComponent('Arpero Woodworks Quote #'+q.num);let u;while((u=`mailto:${encodeURIComponent(to).replace('%40','@')}?subject=${sub}&body=${encodeURIComponent(body)}`).length>1900&&body.length>200)body=body.slice(0,body.length-150).replace(/\n[^\n]*$/,'')+'\n…\nFull quote attached on request.\nOscar · Arpero Woodworks · arperowoodworks.com';
 window.LAST_MAILTO=u;location.href=u;if(q.status==='Draft')q.status='Sent';save();renderQ()}
+
+// ---- Invoices (built on the fly from a quote or project; number + date saved on the source as inv:{num,date}) ----
+// Business rule: no deposits — full payment up front. Status is Paid in full or Due (full amount).
+let vi=null;
+function invNum(o){if(!o.inv){S.invSeq=Math.max(S.invSeq||2000,...S.quotes.map(q=>q.inv?q.inv.num:0),...S.projects.map(p=>p.inv?p.inv.num:0))+1;o.inv={num:S.invSeq,date:TODAY()};save()}return o.inv}
+function invQ(id){const q=S.quotes.find(x=>x.id===id),c=qCalc(q),pj=q.projectId&&S.projects.find(x=>x.id===q.projectId),iv=invNum(q);
+const lines=[...q.items.map(i=>({desc:lineNm(i),qty:i.qty,price:i.price})),...q.custom.map(x=>({desc:x.desc,qty:1,price:+x.price||0}))];
+const paid=q.invPaid!=null?q.invPaid:!!(pj&&+pj.paid>=c.total-0.005&&c.total>0);
+showI({src:q,num:iv.num,date:iv.date,customer:q.customer,contact:q.contact,ref:'Quote #'+q.num,lines,sub:c.sub,disc:c.disc,tax:c.tax,total:c.total,paid,notes:q.notes})}
+function invP(id){const p=S.projects.find(x=>x.id==id),iv=invNum(p),pi=payInfo(p),pr=+p.price||0;
+const paid=p.invPaid!=null?p.invPaid:(pr>0&&pi.owed<=0);
+showI({src:p,num:iv.num,date:iv.date,customer:p.customer||'',contact:'',ref:p.name,lines:[{desc:p.product?lineNm({name:p.product}):p.name,qty:1,price:pr}],sub:pr,disc:0,tax:0,total:pr,paid,notes:''})}
+function showI(v){vi=v;iTog.textContent=v.paid?'Mark due':'Mark paid';
+iCard.innerHTML=`<div class="qc" id="ivEl"><div class="hd"><img src="logo.png?v=2" alt="Arpero Woodworks"><div style="text-align:right"><b style="font-size:20px">INVOICE</b><div>#${v.num}</div><div class="sub">${fd(v.date)}</div><span class="ist ${v.paid?'pd':'du'}">${v.paid?'PAID IN FULL':'DUE'}</span></div></div>
+<div style="margin-bottom:8px">Bill to <b>${esc(v.customer)}</b>${v.contact?'<br><span class="sub">'+esc(v.contact)+'</span>':''}${v.ref?'<br><span class="sub">Re: '+esc(v.ref)+'</span>':''}</div>
+<table><tr><th>Item</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>${v.lines.map(l=>`<tr><td>${esc(l.desc)}</td><td class="r">${l.qty}</td><td class="r">${$$(l.price)}</td><td class="r">${$$(l.price*l.qty)}</td></tr>`).join('')}</table>
+<table style="margin-top:6px" class="tt"><tr class="tt"><td>Subtotal</td><td class="r">${$$(v.sub)}</td></tr>${v.disc?`<tr class="tt"><td>Discount</td><td class="r">−${$$(v.disc)}</td></tr>`:''}${v.tax?`<tr class="tt"><td>Sales tax (8.25%)</td><td class="r">${$$(v.tax)}</td></tr>`:''}
+<tr class="big"><td>Total</td><td class="r">${$$(v.total)}</td></tr><tr class="tt"><td><b>${v.paid?'Paid in full':'Amount due'}</b></td><td class="r"><b>${v.paid?$$(v.total):$$(v.total)}</b></td></tr></table>
+${v.notes?`<div style="margin-top:8px;white-space:pre-wrap">${esc(v.notes)}</div>`:''}<div class="ft">${v.paid?'Thank you for your business!':'Full payment is due before work begins. No deposits.'}<br><b>Arpero Woodworks</b> · arperowoodworks.com</div></div>`;if(!idlg.open)idlg.showModal()}
+function iText(v){const L=[`Arpero Woodworks — Invoice #${v.num}`,`Date: ${fd(v.date)}`,`Bill to: ${v.customer}`];if(v.ref)L.push(`Re: ${v.ref}`);L.push('');v.lines.forEach(l=>L.push(`- ${l.desc} x${l.qty} @ ${$$(l.price)}: ${$$(l.price*l.qty)}`));L.push('',`Subtotal: ${$$(v.sub)}`);if(v.disc)L.push(`Discount: -${$$(v.disc)}`);if(v.tax)L.push(`Sales tax (8.25%): ${$$(v.tax)}`);
+L.push(`Total: ${$$(v.total)}`,v.paid?`Status: PAID IN FULL — thank you!`:`Status: DUE — ${$$(v.total)} (full payment up front, no deposits)`);if(v.notes)L.push('',`Notes: ${v.notes}`);L.push('','Arpero Woodworks','arperowoodworks.com');return L.join('\n')}
+function shareI(){const t=iText(vi);if(navigator.share)navigator.share({title:'Arpero Woodworks Invoice #'+vi.num,text:t}).catch(()=>{});else copyI()}
+function copyI(){const t=iText(vi);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>party('Invoice copied'),()=>prompt('Copy this invoice:',t))}
+function printI(){const t=document.title;document.title='Arpero-Invoice-'+vi.num;window.print();setTimeout(()=>document.title=t,1000)}
+function toggleI(){vi.src.invPaid=!vi.paid;save();vi.paid=!vi.paid;showI(vi)}
+
+function clients(){const m={};[...S.projects.map(p=>p.customer),...S.quotes.map(q=>q.customer)].forEach(n=>{n=(n||'').trim();if(n)m[n.toLowerCase()]=m[n.toLowerCase()]||n});return Object.values(m).sort((a,b)=>a.localeCompare(b))}
+function pickClient(){const c=clients();if(!c.length)return alert('No customers yet. Add a customer name to a project or quote first.');cliSel.innerHTML=c.map(n=>`<option>${esc(n)}</option>`).join('');cdlgI.showModal()}
+// One invoice for every project + every quote not yet turned into a project (no double counting)
+function invC(name){const k=name.trim().toLowerCase(),mt=x=>(x.customer||'').trim().toLowerCase()===k;S.clientInv=S.clientInv||{};const src=S.clientInv[k]=S.clientInv[k]||{};const iv=invNum(src);const lines=[];let total=0,allPaid=true,contact='';
+S.projects.filter(mt).forEach(p=>{const pr=+p.price||0;lines.push({desc:p.name+(p.product?' — '+lineNm({name:p.product}):''),qty:1,price:pr});total+=pr;if(payInfo(p).owed>0||!pr)allPaid=false});
+S.quotes.filter(mt).filter(q=>!(q.projectId&&S.projects.some(p=>p.id===q.projectId))).forEach(q=>{const c=qCalc(q);if(q.contact)contact=q.contact;q.items.forEach(i=>lines.push({desc:lineNm(i)+' (Quote #'+q.num+')',qty:i.qty,price:i.price}));q.custom.forEach(x=>lines.push({desc:x.desc+' (Quote #'+q.num+')',qty:1,price:+x.price||0}));if(c.disc)lines.push({desc:'Discount (Quote #'+q.num+')',qty:1,price:-c.disc});if(c.tax)lines.push({desc:'Sales tax 8.25% (Quote #'+q.num+')',qty:1,price:c.tax});total+=c.total;allPaid=false});
+const paid=src.invPaid!=null?src.invPaid:allPaid;showI({src,num:iv.num,date:iv.date,customer:name,contact,ref:'All orders',lines,sub:total,disc:0,tax:0,total,paid,notes:''})}
 function convQ(id){const q=S.quotes.find(x=>x.id===id),c=qCalc(q);if(q.projectId&&S.projects.some(x=>x.id===q.projectId))return;const nm=(q.items[0]?q.items[0].name.split(' — ')[0]:q.custom[0]?q.custom[0].desc:'Custom order')+(q.items.length+q.custom.length>1?' + more':'');
 const p=P(nm,q.customer,'','',[`From quote #${q.num}`,...q.items.map(i=>`${lineNm(i)} x${i.qty}`),...q.custom.map(x=>x.desc),q.notes].filter(Boolean).join('\n'));p.price=Math.round(c.net*100)/100;p.product=q.items[0]?q.items[0].name:'';p.materialsUsed=(q.mats||[]).map(m=>({id:Math.random().toString(36).slice(2),mid:m.mid,qty:m.qty,used:false}));if(c.cost)p.costs=[{name:'Est. cost (quote)',amount:Math.round(c.cost*100)/100}];
 S.projects.push(p);q.projectId=p.id;save();R();renderQ();projToast(q.customer,p.id)}
