@@ -400,7 +400,8 @@ if(iPdf)go(iPdf);else{toast&&toast('Making PDF…');(iPdfP||buildPdf()).then(go,
 function dlI(){(iPdf?Promise.resolve(iPdf):(iPdfP||buildPdf())).then(f=>{const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)},()=>alert('Could not make the PDF (no internet?). Use Print instead.'))}
 function copyI(){const t=iText(vi);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>party('Invoice copied'),()=>prompt('Copy this invoice:',t))}
 function printI(){const t=document.title;document.title='Arpero-Invoice-'+vi.num;window.print();setTimeout(()=>document.title=t,1000)}
-function toggleI(){vi.src.invPaid=!vi.paid;save();vi.paid=!vi.paid;showI(vi);if(!vI.hidden)renderIv()}
+function invPjs(o){if(o.pids)return o.pids.map(id=>S.projects.find(p=>p.id===id)).filter(Boolean);if(o.projectId){const p=S.projects.find(x=>x.id===o.projectId);return p?[p]:[]}return S.projects.includes(o)?[o]:[]}
+function toggleI(){const np=!vi.paid;vi.src.invPaid=np;invPjs(vi.src).forEach(p=>{if(np){if(p.prePaid==null)p.prePaid=+p.paid||0;p.paid=+p.price||0}else{p.paid=p.prePaid!=null?p.prePaid:0;delete p.prePaid}});save();R();vi.paid=!vi.paid;showI(vi);if(!vI.hidden)renderIv()}
 
 function clients(){const m={};S.projects.filter(p=>p.done).forEach(p=>{const n=(p.customer||'').trim();if(n)m[n.toLowerCase()]=m[n.toLowerCase()]||n});return Object.values(m).sort((a,b)=>a.localeCompare(b))}
 function pickClient(){const c=clients();if(!c.length)return alert('No finished projects with a customer name yet. Mark a project Done ✓ first.');cliSel.innerHTML=c.map(n=>`<option>${esc(n)}</option>`).join('');cliList();cdlgI.showModal()}
