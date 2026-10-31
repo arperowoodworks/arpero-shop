@@ -87,7 +87,7 @@ select option{color:#111;background:#fff}
 .qc,.qc *{color:#111}.qc{background:#fff!important} /* quote stays print-white for sharing */
 .bsr button{min-width:32px!important;width:32px;min-height:32px!important;padding:2px!important;flex:none;font-size:14px}
 .qc .ist{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px;border:2px solid #111}.qc .ist.pd{background:#d9f2e1!important;border-color:#2e8b57;color:#1d5e3a!important}.qc .ist.du{background:#fde2dd!important;border-color:#c0392b;color:#8e2a1f!important}.qc th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#555!important;border-bottom:2px solid #111;padding:4px 0}.qc th.r,.qc td.c{text-align:right}.qc th.r,.qc td.r{padding-left:10px}.qc .sub,.qc .ft{color:#555!important}
-@media print{body *{visibility:hidden!important}#ivEl,#ivEl *{visibility:visible!important}#ivEl{position:fixed;left:0;top:0;width:100%;border:none}dialog#idlg{position:static;border:none;box-shadow:none;background:#fff}}
+@media print{body *{visibility:hidden!important}#ivEl,#ivEl *,#balEl,#balEl *{visibility:visible!important}#ivEl{position:fixed;left:0;top:0;width:100%;border:none}dialog#idlg{position:static;border:none;box-shadow:none;background:#fff}}
 .plan{border:1px solid rgba(255,255,255,.4)!important;border-radius:14px}
 .fab{background:rgba(201,138,60,.9)!important;color:#1e120a!important}
 nav.tabs{left:12px!important;right:12px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;border-radius:26px;background:rgba(30,20,12,.82)!important;border:1px solid rgba(255,255,255,.28)!important;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:6px 4px!important}
@@ -106,6 +106,7 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 <details id="fin"><summary>Finished</summary><div id="done"></div></details>
 <h2>Made to order (Shop)</h2><div id="shop"></div></div>
 <div id="vL" hidden><h2>Woodworking Log</h2>
+<button class="p" style="width:100%;margin-bottom:10px" onclick="balOpen()">📊 Balance Sheet</button>
 <div class="card"><div class="qa"><input id="lAmt" type="number" step="0.01" inputmode="decimal" placeholder="Amount $"><input id="lDate" type="date"><input id="lNote" placeholder="Note (optional)" style="grid-column:1/3"></div>
 <div class="row"><button style="flex:1" onclick="addLog('exp')">＋ Expense</button><button class="p" style="flex:1" onclick="addLog('inc')">＋ Income</button></div></div>
 <div class="card lg"><div><h3>Material Expenses</h3><div id="lExp"></div></div><div><h3>Income</h3><div id="lInc"></div></div></div>
@@ -189,6 +190,12 @@ button:not(nav button){-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(1
 <dialog id="bsdlg"><h2 id="bsTitle">Build Steps</h2><div class="sub" id="bsProg"></div><div class="bar" style="margin:6px 0"><i id="bsBar"></i></div><div id="bsList"></div>
 <div class="ql" style="margin-top:8px"><input class="gr" id="bsNew" placeholder="Add a step…" onkeydown="if(event.key==='Enter'){event.preventDefault();bsAdd()}"><button type="button" class="p" onclick="bsAdd()">＋</button></div>
 <label>Load template<select id="bsTpl"></select></label><div class="row" style="margin-top:6px"><button onclick="bsLoad()">Load</button><button onclick="bsSaveT()">Save steps as template</button><button onclick="bsdlg.close()">Close</button></div></dialog>
+<dialog id="baldlg"><div id="balCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="balShare()">Share PDF</button><button onclick="balDl()">Download PDF</button><button onclick="baldlg.close()">Close</button></div>
+<details style="margin-top:10px"><summary><b>Edit your numbers</b> (enter once, then it updates itself)</summary>
+<label>Starting cash (cash in the business before this app tracked it)<input id="balStart" type="number" step="0.01" inputmode="decimal" oninput="balSet()"></label>
+<label>Owner money put in<input id="balOwner" type="number" step="0.01" inputmode="decimal" oninput="balSet()"></label>
+<h3>Tools &amp; equipment</h3><div id="balEq"></div><button onclick="balAdd('equip')">＋ Tool / equipment</button>
+<h3>Liabilities (credit cards, loans, tool financing)</h3><div id="balLi"></div><button onclick="balAdd('liab')">＋ Liability</button></details></dialog>
 <dialog id="idlg"><div id="iCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="shareI()" id="iShr">Share PDF</button><button onclick="dlI()">Download PDF</button><button onclick="printI()">Print</button><button onclick="copyI()">Copy text</button><button onclick="toggleI()" id="iTog">Mark paid</button><button onclick="idlg.close()">Close</button></div></dialog>
 <dialog id="vdlg"><div id="qCard"></div><div class="row" style="margin-top:10px"><button class="p" onclick="shareQ()">Share</button><button onclick="emailQ()">Email quote</button><button onclick="copyQ()">Copy text</button><button onclick="vdlg.close()">Close</button></div></dialog>
 <dialog id="chdlg"><div class="name">Use cloud data or this device's data?</div><div class="sub" id="chInfo"></div>
@@ -400,6 +407,32 @@ if(iPdf)go(iPdf);else{toast&&toast('Making PDF…');(iPdfP||buildPdf()).then(go,
 function dlI(){(iPdf?Promise.resolve(iPdf):(iPdfP||buildPdf())).then(f=>{const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)},()=>alert('Could not make the PDF (no internet?). Use Print instead.'))}
 function copyI(){const t=iText(vi);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>party('Invoice copied'),()=>prompt('Copy this invoice:',t))}
 function printI(){const t=document.title;document.title='Arpero-Invoice-'+vi.num;window.print();setTimeout(()=>document.title=t,1000)}
+// ---- Balance Sheet (auto from projects, log, materials; S.bal = {start, owner, equip:[{name,value}], liab:[{name,value}]}) ----
+function balD(){S.bal=S.bal||{};const b=S.bal;b.equip=b.equip||[];b.liab=b.liab||[];return b}
+function balCalc(){const b=balD(),n=x=>+x||0;let col=0,cost=0,ar=0;S.projects.forEach(p=>{const i=payInfo(p);col+=i.pd;cost+=(p.costs||[]).filter(c=>c.name!=='Materials from stock').reduce((a,c)=>a+n(c.amount),0);if(p.done||(S.invoices||[]).some(v=>v.pids.includes(p.id))||p.inv)ar+=i.owed});
+const L=S.log||[],li=L.filter(x=>x.type==='inc').reduce((a,x)=>a+n(x.amount),0),le=L.filter(x=>x.type==='exp').reduce((a,x)=>a+n(x.amount),0);
+const cash=n(b.start)+col+li-cost-le,inv=(S.materials||[]).reduce((a,m)=>a+Math.max(0,n(m.qty))*n(m.cost),0),eq=b.equip.reduce((a,x)=>a+n(x.value),0);
+const ta=cash+ar+inv+eq,tl=b.liab.reduce((a,x)=>a+n(x.value),0),own=n(b.owner),re=ta-tl-own,te=own+re;
+return{cash,ar,inv,eq,ta,tl,own,re,te,col,li,cost,le,start:n(b.start),ok:Math.abs(ta-(tl+te))<0.005}}
+function balHTML(){const b=balD(),c=balCalc(),r=(l,v,cls='')=>`<tr class="${cls}"><td>${l}</td><td class="r">${v<0?'('+$$(-v)+')':$$(v)}</td></tr>`,h=t=>`<tr><th colspan="2" style="padding-top:12px">${t}</th></tr>`;
+return`<div class="qc" id="balEl"><div class="hd"><img src="logo.png?v=2" alt="Arpero Woodworks"><div style="text-align:right"><b style="font-size:20px">BALANCE SHEET</b><div class="sub">As of ${fd(TODAY())}</div><span class="ist ${c.ok?'pd':'du'}">${c.ok?'✓ BALANCED':'NOT BALANCED'}</span></div></div>
+<table>${h('Assets')}${r('Cash',c.cash)}${r('Accounts receivable',c.ar)}${r('Inventory (materials on hand)',c.inv)}${b.equip.filter(x=>x.name||+x.value).map(x=>r('&nbsp;&nbsp;'+esc(x.name||'Equipment'),+x.value||0)).join('')}${r('Tools &amp; equipment',c.eq)}<tr class="big"><td>Total assets</td><td class="r">${$$(c.ta)}</td></tr>
+${h('Liabilities')}${b.liab.filter(x=>x.name||+x.value).map(x=>r(esc(x.name||'Liability'),+x.value||0)).join('')||'<tr><td class="sub">None</td><td class="r">$0.00</td></tr>'}<tr class="big"><td>Total liabilities</td><td class="r">${$$(c.tl)}</td></tr>
+${h("Owner's equity")}${r('Owner money put in',c.own)}${r('Retained earnings',c.re)}<tr class="big"><td>Total equity</td><td class="r">${$$(c.te)}</td></tr>
+<tr class="big"><td>Total liabilities + equity</td><td class="r">${$$(c.tl+c.te)}</td></tr></table>
+<div class="ft">Updates automatically from your projects, payments, costs, log and materials.<br><b>Arpero Woodworks</b> · arperowoodworks.com</div></div>`}
+function balRows(k,el){el.innerHTML=balD()[k].map((x,i)=>`<div class="ci"><input class="nm" placeholder="Name" value="${esc(x.name||'')}" oninput="balD().${k}[${i}].name=this.value;balSet(1)"><input class="amt" type="number" step="0.01" inputmode="decimal" placeholder="$" value="${x.value??''}" oninput="balD().${k}[${i}].value=parseFloat(this.value)||0;balSet(1)"><button class="d" onclick="balD().${k}.splice(${i},1);balSet(1);balForm()">✕</button></div>`).join('')}
+function balForm(){const b=balD();balStart.value=b.start||'';balOwner.value=b.owner||'';balRows('equip',balEq);balRows('liab',balLi)}
+function balAdd(k){balD()[k].push({name:'',value:''});balForm();save()}
+let balPdf=null,balPdfP=null,balT=null;
+function balSet(rows){const b=balD();if(!rows){b.start=parseFloat(balStart.value)||0;b.owner=parseFloat(balOwner.value)||0}balCard.innerHTML=balHTML();balPdf=null;balPdfP=null;clearTimeout(balT);balT=setTimeout(()=>{save();balBuild()},600)}
+function balOpen(){balCard.innerHTML=balHTML();balForm();if(!baldlg.open)baldlg.showModal();balBuild()}
+function balBuild(){balPdf=null;const nm='Arpero-Balance-Sheet-'+TODAY()+'.pdf';balPdfP=pdfLibs().then(()=>html2canvas(document.getElementById('balEl'),{scale:2,backgroundColor:'#fff',useCORS:true})).then(cv=>{const{jsPDF}=window.jspdf,d=new jsPDF({unit:'pt',format:'letter'}),W=612,H=792,m=40,w=W-2*m;let h=cv.height*w/cv.width;const sc=h>H-2*m?(H-2*m)/h:1;
+d.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',m+(w-w*sc)/2,m,w*sc,h*sc);d.setProperties({title:'Arpero Woodworks Balance Sheet'});balPdf=new File([d.output('blob')],nm,{type:'application/pdf'});window.LAST_PDF=balPdf;return balPdf});balPdfP.catch(()=>{});return balPdfP}
+function balText(){const c=balCalc();return['Arpero Woodworks — Balance Sheet','As of '+fd(TODAY()),'',`Cash: ${$$(c.cash)}`,`Accounts receivable: ${$$(c.ar)}`,`Inventory: ${$$(c.inv)}`,`Tools & equipment: ${$$(c.eq)}`,`Total assets: ${$$(c.ta)}`,'',`Total liabilities: ${$$(c.tl)}`,`Owner money put in: ${$$(c.own)}`,`Retained earnings: ${$$(c.re)}`,`Total equity: ${$$(c.te)}`].join('\n')}
+function balShare(){const title='Arpero Woodworks Balance Sheet',go=f=>{if(f&&navigator.canShare&&navigator.canShare({files:[f]}))return navigator.share({files:[f],title}).catch(()=>{});if(navigator.share)return navigator.share({title,text:balText()}).catch(()=>{});alert(balText())};
+if(balPdf)go(balPdf);else{toast('Making PDF…');(balPdfP||balBuild()).then(go,()=>go(null))}}
+function balDl(){(balPdf?Promise.resolve(balPdf):(balPdfP||balBuild())).then(f=>{const u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)},()=>alert('Could not make the PDF (no internet?).'))}
 function invPjs(o){if(o.pids)return o.pids.map(id=>S.projects.find(p=>p.id===id)).filter(Boolean);if(o.projectId){const p=S.projects.find(x=>x.id===o.projectId);return p?[p]:[]}return S.projects.includes(o)?[o]:[]}
 function toggleI(){const np=!vi.paid;vi.src.invPaid=np;invPjs(vi.src).forEach(p=>{if(np){if(p.prePaid==null)p.prePaid=+p.paid||0;p.paid=+p.price||0}else{p.paid=p.prePaid!=null?p.prePaid:0;delete p.prePaid}});save();R();vi.paid=!vi.paid;showI(vi);if(!vI.hidden)renderIv()}
 
